@@ -302,15 +302,15 @@ class GoogleSearchService {
                 const cookieArray = Array.from(this.cookies.entries()).map(([name, value]) => ({
                     name,
                     value,
-                    domain: '.google.com',
+                    domain: '.google.nl',
                     path: '/'
                 }));
                 await page.setCookie(...cookieArray);
             }
 
-            // Build URL with pagination
+            // Build URL with pagination - use google.nl for Dutch results
             const encodedQuery = encodeURIComponent(query);
-            const searchUrl = `https://www.google.com/search?q=${encodedQuery}&hl=en&num=${num}&start=${start}`;
+            const searchUrl = `https://www.google.nl/search?q=${encodedQuery}&hl=nl&num=${num}&start=${start}`;
 
             await page.goto(searchUrl, {
                 waitUntil: 'domcontentloaded',
