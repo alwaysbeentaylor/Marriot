@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: lareserve-backend
+    env: node
+    region: frankfurt
+    plan: starter
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: RENDER
+        value: true
+    healthCheckPath: /api/health
+    autoDeploy: true
+    numInstances: 1
+

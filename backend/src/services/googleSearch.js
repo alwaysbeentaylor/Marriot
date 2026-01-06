@@ -522,24 +522,58 @@ class GoogleSearchService {
                 }
             }
 
-            await page.waitForSelector('#search, #rso', { timeout: 10000 }).catch(() => {});
+            // Wait for search results or check for errors
+            try {
+                await page.waitForSelector('#search, #rso, #topstuff, .g', { timeout: 10000 });
+            } catch (e) {
+                console.log('⚠️ Search results container not found, checking page content...');
+                const pageContent = await page.content();
+                const hasCaptcha = pageContent.includes('captcha') || pageContent.includes('unusual traffic');
+                const hasResults = pageContent.includes('g-link') || pageContent.includes('result');
+                
+                if (hasCaptcha) {
+                    console.log('⚠️ CAPTCHA detected in page content but not caught by detector!');
+                }
+                if (!hasResults) {
+                    console.log('⚠️ No search results found in page content');
+                    console.log(`   Page title: ${await page.title()}`);
+                }
+            }
 
             const results = await page.evaluate((maxResults) => {
                 const items = [];
-                const resultElements = document.querySelectorAll('div.g, div[data-hveid] > div');
+                
+                // Try multiple selectors for Google results
+                const selectors = [
+                    'div.g',
+                    'div[data-hveid] > div',
+                    'div.tF2Cxc',
+                    'div[data-ved]',
+                    '.yuRUbf',
+                    'div[jscontroller]'
+                ];
+                
+                let resultElements = [];
+                for (const selector of selectors) {
+                    resultElements = document.querySelectorAll(selector);
+                    if (resultElements.length > 0) {
+                        console.log(`Found ${resultElements.length} elements with selector: ${selector}`);
+                        break;
+                    }
+                }
 
                 resultElements.forEach((el) => {
                     if (items.length >= maxResults) return;
 
-                    const titleEl = el.querySelector('h3');
+                    const titleEl = el.querySelector('h3, h2, .LC20lb, .DKV0Md');
                     const linkEl = el.querySelector('a[href]');
-                    const snippetEl = el.querySelector('div[data-sncf], .VwiC3b, .yXK7lf');
+                    const snippetEl = el.querySelector('div[data-sncf], .VwiC3b, .yXK7lf, .s, .IsZvec');
 
                     const title = titleEl?.textContent || '';
                     const link = linkEl?.href || '';
                     const snippet = snippetEl?.textContent || '';
 
-                    if (title && link && !link.includes('google.com/search')) {
+                    if (title && link && !link.includes('google.com/search') && !link.includes('google.com/url')) {
                         items.push({ title, link, snippet });
                     }
                 });
@@ -550,6 +584,13 @@ class GoogleSearchService {
             await page.close();
 
             console.log(`📋 Found ${results.length} Google results for: ${query}`);
+            if (results.length === 0) {
+                console.log('⚠️ No results found - this could indicate:');
+                console.log('   1. CAPTCHA not detected/solved');
+                console.log('   2. Google blocking the request');
+                console.log('   3. Page structure changed');
+                console.log('   4. No results actually exist for this query');
+            }
             return results;
 
         } catch (error) {
