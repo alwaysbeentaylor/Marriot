@@ -148,3 +148,4 @@ Als niets werkt na het controleren van bovenstaande punten:
 - [ ] Backend service draait (check health endpoint: `/api/health`)
 - [ ] Network connectivity werkt (Render kan internet bereiken)
 
+

@@ -721,19 +721,52 @@ class GoogleSearchService {
      */
     async solveCaptcha(page, pageUrl) {
         try {
-            // Extract reCAPTCHA sitekey
+            // Extract reCAPTCHA sitekey - improved extraction for different CAPTCHA formats
             const sitekey = await page.evaluate(() => {
-                // Try to find sitekey in iframe
-                const iframe = document.querySelector('iframe[src*="recaptcha"]');
-                if (iframe) {
+                // Method 1: Try to find sitekey in iframe src
+                const iframes = document.querySelectorAll('iframe[src*="recaptcha"]');
+                for (const iframe of iframes) {
                     const match = iframe.src.match(/[?&]k=([^&]+)/);
-                    if (match) return match[1];
+                    if (match && match[1]) return match[1];
                 }
 
-                // Try to find in recaptcha div
-                const recaptchaDiv = document.querySelector('.g-recaptcha, [data-sitekey]');
-                if (recaptchaDiv) {
-                    return recaptchaDiv.getAttribute('data-sitekey');
+                // Method 2: Try to find in recaptcha div with data-sitekey
+                const recaptchaDivs = document.querySelectorAll('.g-recaptcha, [data-sitekey], div[class*="recaptcha"]');
+                for (const div of recaptchaDivs) {
+                    const key = div.getAttribute('data-sitekey');
+                    if (key) return key;
+                }
+
+                // Method 3: Search in script tags for sitekey
+                const scripts = document.querySelectorAll('script');
+                for (const script of scripts) {
+                    const content = script.textContent || script.innerHTML;
+                    const match = content.match(/sitekey['"]?\s*[:=]\s*['"]([^'"]+)['"]/i);
+                    if (match && match[1]) return match[1];
+                }
+
+                // Method 4: Search in page HTML for common sitekey patterns
+                const html = document.documentElement.innerHTML;
+                const patterns = [
+                    /data-sitekey=["']([^"']+)["']/i,
+                    /sitekey["']?\s*[:=]\s*["']([^"']+)["']/i,
+                    /recaptcha[^"']*["']([A-Za-z0-9_-]{40})["']/i
+                ];
+                
+                for (const pattern of patterns) {
+                    const match = html.match(pattern);
+                    if (match && match[1] && match[1].length > 20) return match[1];
+                }
+
+                // Method 5: Try to find in grecaptcha object if available
+                if (typeof window !== 'undefined' && window.grecaptcha) {
+                    try {
+                        const widgets = document.querySelectorAll('.g-recaptcha');
+                        for (let i = 0; i < widgets.length; i++) {
+                            const widgetId = window.grecaptcha.render(widgets[i], {});
+                            // This might not work but worth trying
+                        }
+                    } catch (e) {}
                 }
 
                 return null;

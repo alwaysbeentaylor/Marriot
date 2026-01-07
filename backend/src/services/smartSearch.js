@@ -2,7 +2,6 @@ const OpenAI = require('openai');
 const companyScraper = require('./companyScraper');
 const knowledgeGraph = require('./knowledgeGraph');
 const googleSearch = require('./googleSearch');
-const braveSearch = require('./braveSearch');
 const queryGenerator = require('./queryGenerator');
 
 /**
@@ -1559,7 +1558,13 @@ WEBSITE ANALYSE:
    - NAAMGENOTEN: Als de naam veelvoorkomend is en er is geen match met land/bedrijf, neem dan aan dat het een naamgenoot is en rapporteer niets. 
    - RESULTAAT BIJ GEEN INFO: Als er geen actuele, relevante informatie is over de gast als levende persoon, zet dan alle velden op "null" of "Geen informatie gevonden" en zet noResultsFound op true. Rapporteer NOOIT over iemand anders alleen omdat de naam hetzelfde is.
 8. FOCUS OP VIP STATUS: We zoeken werkervaring, vermogen, titels en invloed van de HUIDIGE persoon.
-9. EMAIL DOMAIN INFO IS PRIORITY: Als er EMAIL DOMAIN ANALYSE data is, gebruik deze ALTIJD als primaire bron voor:
+9. STUDENT STATUS - KRITISCHE VERIFICATIE: Als je "Student" of "Student at [School]" ziet als functie:
+   - VERIFICATIE: Controleer of dit een actuele student is of een verouderd profiel
+   - CONTEXT CHECK: Als er ook werkervaring, bedrijfsnaam, of andere professionele indicatoren zijn, dan is "Student" waarschijnlijk VERKEERD of VEROUderd
+   - VOORKEUR: Als er zowel "Student" als een bedrijfsnaam/werkervaring is, gebruik dan de BEDRIJFSNAAM en WERKERVARING als primaire bron
+   - ALERT: Als iemand een bedrijf heeft (email domain info) maar LinkedIn zegt "Student", dan is de LinkedIn data waarschijnlijk verouderd - gebruik de bedrijfsinfo
+   - RAPPORTEER NIET: Rapporteer "Student" alleen als er GEEN andere professionele indicatoren zijn en het duidelijk een actuele student is
+10. EMAIL DOMAIN INFO IS PRIORITY: Als er EMAIL DOMAIN ANALYSE data is, gebruik deze ALTIJD als primaire bron voor:
    - Bedrijfsnaam (company_analysis.company_name)
    - Website URL (gebruik emailDomainInfo.websiteUrl)
    - Bedrijfsbeschrijving (company_analysis.company_description)
@@ -1905,7 +1910,7 @@ Genereer een GEDETAILLEERD JSON-antwoord:
         }
 
         // ============================================
-        // STEP 2: Search (Google FIRST - better results, Brave as fallback)
+        // STEP 2: Search (Google ONLY - exclusive use as requested)
         // ============================================
         const allResults = [];
         const seenUrls = new Set();
@@ -1962,38 +1967,9 @@ Genereer een GEDETAILLEERD JSON-antwoord:
             }
         }
         
-        // Fallback to Brave if Google failed and Brave is configured
-        if (googleFailed && allResults.length === 0 && braveSearch.isConfigured()) {
-            console.log('🦁 Google failed, falling back to Brave Search...');
-            
-            for (let i = 0; i < Math.min(uniqueQueries.length, 3); i++) {
-                const query = uniqueQueries[i];
-                try {
-                    console.log(`   🔎 Brave Query ${i + 1}: ${query.substring(0, 60)}...`);
-                    const results = await braveSearch.search(query, 10);
-                    
-                    console.log(`   📊 Query returned ${results?.length || 0} results`);
-                    
-                    for (const result of (results || [])) {
-                        if (result.link && !seenUrls.has(result.link)) {
-                            seenUrls.add(result.link);
-                            allResults.push(result);
-                            
-                            if (result.link.includes('linkedin.com/in/')) {
-                                linkedInFound = true;
-                                console.log(`   ✅ LinkedIn profile found: ${result.link}`);
-                            }
-                        }
-                    }
-                    
-                    if (linkedInFound && allResults.length >= 2) {
-                        console.log(`   ✅ LinkedIn found - stopping early`);
-                        break;
-                    }
-                } catch (error) {
-                    console.error(`   ❌ Brave query failed: ${error.message}`);
-                }
-            }
+        // Google-only: No Brave fallback - using Google exclusively as requested
+        if (googleFailed && allResults.length === 0) {
+            console.log('⚠️ Google search failed - no results found. Will continue with empty results.');
         }
 
         // Fallback: if nothing found, try 1-2 generic queries

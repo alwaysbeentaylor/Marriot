@@ -24,14 +24,24 @@ const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',  // Next.js landing page dev
   process.env.FRONTEND_URL,
-  process.env.LANDING_URL   // Production landing page URL
+  process.env.LANDING_URL,   // Production landing page URL
+  // Also allow any Render frontend URLs (for production)
+  process.env.RENDER_EXTERNAL_URL ? new URL(process.env.RENDER_EXTERNAL_URL).origin : null
 ].filter(Boolean);
+
+// Log allowed origins for debugging
+console.log('🌐 CORS allowed origins:', allowedOrigins);
 
 app.use(cors({
   origin: (origin, callback) => {
     // allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
+    
+    // Check if origin is in allowed list
     if (allowedOrigins.indexOf(origin) === -1) {
+      // Log the rejected origin for debugging
+      console.warn(`⚠️ CORS blocked origin: ${origin}`);
+      console.warn(`   Allowed origins: ${allowedOrigins.join(', ')}`);
       const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
       return callback(new Error(msg), false);
     }
