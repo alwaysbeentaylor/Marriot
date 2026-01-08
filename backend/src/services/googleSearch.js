@@ -30,17 +30,15 @@ class GoogleSearchService {
         ];
         this.currentUserAgent = this.userAgents[0];
 
-        // 2Captcha Residential Proxy configuration
-        // These are rotating residential IPs that Google won't block
-        this.twoCaptchaProxyEndpoint = 'https://api.2captcha.com/proxy';
-        this.residentialProxies = []; // Will be populated dynamically
-        this.proxyPool = []; // Fallback pool
+        // Proxy configuration - use the working proxy from environment or fallback
+        // This rotating proxy worked locally, should work in production too
+        this.proxyPool = [
+            'https://u1bda9df9575305d3-zone-custom-region-eu:u1bda9df9575305d3@43.157.126.177:2333'
+        ];
         this.currentProxyIndex = 0;
         this.failedProxies = new Set();
         this.rotateProxyOnNextLaunch = false;
         this.currentProxyInfo = null;
-        this.lastProxyFetch = 0;
-        this.proxyFetchInterval = 5 * 60 * 1000; // Refresh proxies every 5 minutes
     }
 
     /**
@@ -113,21 +111,13 @@ class GoogleSearchService {
 
     /**
      * Get next proxy from rotation pool
-     * First tries 2Captcha residential proxies, then falls back to pool
      */
     async getNextProxy() {
-        // Try to get 2Captcha residential proxies first (best option - residential IPs)
-        const residentialProxies = await this.fetch2CaptchaProxies();
-        if (residentialProxies.length > 0) {
-            // Rotate through residential proxies
-            const proxy = residentialProxies[this.currentProxyIndex % residentialProxies.length];
-            this.currentProxyIndex++;
-            console.log(`🏠 Using 2Captcha residential proxy: ${proxy}`);
-            return proxy;
+        // Use proxy from pool
+        if (this.proxyPool.length === 0) {
+            console.log('⚠️ No proxies in pool - using direct connection');
+            return null;
         }
-
-        // Fallback to static proxy pool
-        if (this.proxyPool.length === 0) return null;
 
         // Try to find a proxy that hasn't failed recently
         let attempts = 0;
