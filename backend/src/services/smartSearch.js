@@ -257,10 +257,55 @@ Return JSON:
     }
 
     /**
-     * Use AI to select the most likely match from general Google snippets
+     * Verify if a location string matches the target country.
+     * Robust check for city/country names in various languages.
      */
+    verifyLocationMatch(location, targetCountry) {
+        if (!location || !targetCountry) return true; // Can't verify, assume match
+
+        const locLower = location.toLowerCase();
+        const targetLower = targetCountry.toLowerCase().trim();
+
+        // Get all terms for the target country (cities, variations)
+        const countryMap = {
+            'nederland': ['nederland', 'netherlands', 'nl', 'holland', 'amsterdam', 'rotterdam', 'utrecht', 'den haag', 'the hague', 'eindhoven', 'groningen'],
+            'netherlands': ['nederland', 'netherlands', 'nl', 'holland', 'amsterdam', 'rotterdam', 'utrecht', 'den haag', 'the hague', 'eindhoven', 'groningen'],
+            'belgië': ['belgië', 'belgium', 'be', 'brussel', 'brussels', 'antwerpen', 'antwerp', 'gent', 'ghent', 'brugge', 'bruges'],
+            'belgium': ['belgië', 'belgium', 'be', 'brussel', 'brussels', 'antwerpen', 'antwerp', 'gent', 'ghent', 'brugge', 'bruges'],
+            'duitsland': ['duitsland', 'germany', 'de', 'berlin', 'münchen', 'munich', 'hamburg', 'frankfurt', 'köln', 'cologne'],
+            'germany': ['duitsland', 'germany', 'de', 'berlin', 'münchen', 'munich', 'hamburg', 'frankfurt', 'köln', 'cologne'],
+            'frankrijk': ['frankrijk', 'france', 'fr', 'paris', 'lyon', 'marseille', 'toulouse', 'nice'],
+            'france': ['frankrijk', 'france', 'fr', 'paris', 'lyon', 'marseille', 'toulouse', 'nice'],
+            'verenigd koninkrijk': ['verenigd koninkrijk', 'united kingdom', 'uk', 'england', 'london', 'manchester', 'birmingham', 'glasgow', 'edinburgh'],
+            'united kingdom': ['verenigd koninkrijk', 'united kingdom', 'uk', 'england', 'london', 'manchester', 'birmingham', 'glasgow', 'edinburgh'],
+            'uk': ['verenigd koninkrijk', 'united kingdom', 'uk', 'england', 'london', 'manchester', 'birmingham', 'glasgow', 'edinburgh'],
+            'spanje': ['spanje', 'spain', 'es', 'madrid', 'barcelona', 'valencia', 'sevilla', 'seville'],
+            'spain': ['spanje', 'spain', 'es', 'madrid', 'barcelona', 'valencia', 'sevilla', 'seville'],
+            'italië': ['italië', 'italy', 'it', 'rome', 'milaan', 'milan', 'napels', 'naples', 'venetië', 'venice'],
+            'italy': ['italië', 'italy', 'it', 'rome', 'milaan', 'milan', 'napels', 'naples', 'venetië', 'venice'],
+            'egypte': ['egypte', 'egypt', 'eg', 'cairo', 'alexandria', 'giza'],
+            'egypt': ['egypte', 'egypt', 'eg', 'cairo', 'alexandria', 'giza'],
+        };
+
+        const terms = countryMap[targetLower] || [targetLower];
+        const isMatch = terms.some(term => locLower.includes(term.toLowerCase()));
+
+        if (!isMatch) {
+            // Check if it mentions a strong city from ANOTHER country
+            const allOtherCities = Object.entries(countryMap)
+                .filter(([country]) => country !== targetLower)
+                .flatMap(([, cityList]) => cityList)
+                .filter(term => !terms.includes(term)); // Don't include terms that are also in target
+
+            const mentionsOtherCountry = allOtherCities.some(city => locLower.includes(city.toLowerCase()));
+            if (mentionsOtherCountry) return false;
+        }
+
+        return true;
+    }
+
     /**
-     * Get search terms for a country (common name variations)
+     * Use AI to select the best match from candidates
      */
     getCountrySearchTerms(country) {
         if (!country) return [];
@@ -2210,6 +2255,11 @@ Genereer een GEDETAILLEERD JSON-antwoord:
      * Helper to wrap up the research process
      */
     async finalizeResearch(guest, linkedinInfo, celebrityInfo, fallbackMatch, allResults = [], emailDomainInfoFromSearch = null) {
+        // Initialize results with defaults
+        let instagramResult = { url: null, handle: null, followers: null };
+        let twitterResult = { url: null, handle: null, followers: null };
+        let newsInfo = { articles: [], results: [] };
+
         // Deep scrape if it's a fallback match (not LinkedIn)
         if (fallbackMatch && fallbackMatch.url && !fallbackMatch.url.includes('linkedin.com')) {
             const deepContent = await googleSearch.fetchPageContent(fallbackMatch.url, 8000);
@@ -2228,11 +2278,6 @@ Genereer een GEDETAILLEERD JSON-antwoord:
         }
 
         // Note: celebrityInfo is already fetched at the start of searchGuest and passed here
-
-
-        // Initialize social media results
-        let instagramResult = { url: null, handle: null, followers: null };
-        let twitterResult = { url: null, handle: null, followers: null };
         // -----------------------------------------------
         // STEP 2: CELEBRITY DETECTION (EARLY EXIT)
         // -----------------------------------------------
