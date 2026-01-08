@@ -30,10 +30,10 @@ class GoogleSearchService {
         ];
         this.currentUserAgent = this.userAgents[0];
 
-        // Proxy configuration - use the working proxy from environment or fallback
-        // This rotating proxy worked locally, should work in production too
+        // Bright Data RESIDENTIAL proxy - real home IPs that Google won't block
+        // Format: http://username:password@host:port
         this.proxyPool = [
-            'https://u1bda9df9575305d3-zone-custom-region-eu:u1bda9df9575305d3@43.157.126.177:2333'
+            'http://brd-customer-hl_18ddad31-zone-residential_proxy1:c9h2heunpf8n@brd.superproxy.io:33335'
         ];
         this.currentProxyIndex = 0;
         this.failedProxies = new Set();
