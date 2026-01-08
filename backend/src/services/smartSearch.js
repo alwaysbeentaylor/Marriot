@@ -2114,9 +2114,9 @@ Return JSON:
                     }
                 });
 
-                // Stop if we found LinkedIn and have enough results
-                if (linkedInFound && allResults.length >= 3) {
-                    console.log(`   ✅ Sufficient results found - stopping after ${i + chunk.length} queries`);
+                // SPEED: Stop immediately if we found a LinkedIn profile with the guest's name
+                if (linkedInFound) {
+                    console.log(`   ✅ LinkedIn found - stopping search early`);
                     break;
                 }
             }
@@ -2534,12 +2534,27 @@ Return JSON:
                 if (isInvalidCompany) {
                     console.log(`📋 Skipping company lookup for invalid domain: ${targetCompany}`);
                 } else {
-                    console.log(`🏢 Quick company lookup: ${targetCompany}`);
-                    // companyScraper already extracts info from snippets via AI
-                    companyInfo = await companyScraper.searchCompany(targetCompany, {
-                        guestCountry: guest.country,
-                        guestCity: guest.city || null
-                    });
+                    // SPEED: Skip company search for well-known large companies (we already know what they are)
+                    const wellKnownCompanies = [
+                        'essent', 'kpn', 'ing', 'rabobank', 'abn amro', 'abn', 'philips', 'shell', 'unilever',
+                        'heineken', 'akzo', 'asml', 'booking.com', 'adyen', 'wolters kluwer', 'randstad',
+                        'proximus', 'belfius', 'bnp paribas', 'kbc', 'dexia', 'telenet', 'orange', 'vodafone',
+                        'deloitte', 'pwc', 'kpmg', 'ey', 'ernst', 'mckinsey', 'bcg', 'accenture', 'capgemini',
+                        'microsoft', 'google', 'amazon', 'apple', 'facebook', 'meta', 'ibm', 'oracle', 'sap',
+                        'albert heijn', 'jumbo', 'lidl', 'aldi', 'action', 'ikea', 'mediamarkt', 'coolblue',
+                        'ns', 'prorail', 'schiphol', 'klm', 'transavia', 'brussels airlines', 'lufthansa'
+                    ];
+                    const isWellKnown = wellKnownCompanies.some(c => targetCompany?.toLowerCase().includes(c));
+
+                    if (isWellKnown) {
+                        console.log(`⚡ Skipping company lookup for well-known company: ${targetCompany}`);
+                    } else {
+                        console.log(`🏢 Quick company lookup: ${targetCompany}`);
+                        companyInfo = await companyScraper.searchCompany(targetCompany, {
+                            guestCountry: guest.country,
+                            guestCity: guest.city || null
+                        });
+                    }
                 }
             }
             // SKIP website scraping - AI already extracted info from snippets
