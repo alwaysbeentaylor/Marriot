@@ -20,7 +20,7 @@ class GoogleSearchService {
         // Log configuration on startup
         console.log('🔧 GoogleSearchService initialized:');
         console.log(`   📦 2Captcha API Key: ${this.apiKey ? '✅ Set (' + this.apiKey.substring(0, 8) + '...)' : '❌ NOT SET!'}`);
-        console.log(`   🌐 Proxy URL: ${this.proxyUrl ? '✅ Set' : '❌ NOT SET (using proxy pool)'}`);
+        console.log(`   🌐 Proxy URL: ${this.proxyUrl ? '✅ Set' : '❌ NOT SET (using 2Captcha residential proxies)'}`);
         console.log(`   ⏱️ Search delay: ${this.minDelay}ms`);
         this.cookies = new Map();
         this.userAgents = [
@@ -30,20 +30,98 @@ class GoogleSearchService {
         ];
         this.currentUserAgent = this.userAgents[0];
 
-        // EU Region proxy - single IP for better reliability
-        this.proxyPool = [
-            'https://u1bda9df9575305d3-zone-custom-region-eu:u1bda9df9575305d3@43.157.126.177:2333'
-        ];
+        // 2Captcha Residential Proxy configuration
+        // These are rotating residential IPs that Google won't block
+        this.twoCaptchaProxyEndpoint = 'https://api.2captcha.com/proxy';
+        this.residentialProxies = []; // Will be populated dynamically
+        this.proxyPool = []; // Fallback pool
         this.currentProxyIndex = 0;
         this.failedProxies = new Set();
         this.rotateProxyOnNextLaunch = false;
         this.currentProxyInfo = null;
+        this.lastProxyFetch = 0;
+        this.proxyFetchInterval = 5 * 60 * 1000; // Refresh proxies every 5 minutes
+    }
+
+    /**
+     * Fetch residential proxies from 2Captcha API
+     * Uses the same API key as CAPTCHA solving
+     */
+    async fetch2CaptchaProxies() {
+        if (!this.apiKey) {
+            console.log('⚠️ No 2Captcha API key - cannot fetch residential proxies');
+            return [];
+        }
+
+        // Check if we need to refresh (cache for 5 minutes)
+        const now = Date.now();
+        if (this.residentialProxies.length > 0 && (now - this.lastProxyFetch) < this.proxyFetchInterval) {
+            return this.residentialProxies;
+        }
+
+        try {
+            console.log('🔄 Fetching 2Captcha residential proxies...');
+
+            // First check account balance/status
+            const statusUrl = `https://api.2captcha.com/proxy?key=${this.apiKey}`;
+            const statusRes = await fetch(statusUrl);
+            const statusData = await statusRes.json();
+
+            if (statusData.status === 'OK') {
+                console.log(`✅ 2Captcha Proxy Account Status:`);
+                console.log(`   👤 Username: ${statusData.data?.username || 'N/A'}`);
+                console.log(`   📊 Traffic Used: ${statusData.data?.use_flow?.toFixed(2) || 0} MB / ${statusData.data?.total_flow || 0} MB`);
+
+                // Generate proxy connections for Netherlands (NL) - good for Dutch/EU searches
+                // Using HTTP protocol for Puppeteer compatibility
+                const generateUrl = `https://api.2captcha.com/proxy/generate_white_list_connections?key=${this.apiKey}&country=nl&protocol=http&connection_count=10`;
+
+                console.log('🌍 Requesting residential proxies for Netherlands (NL)...');
+                const proxyRes = await fetch(generateUrl);
+                const proxyData = await proxyRes.json();
+
+                if (proxyData.status === 'OK' && proxyData.data && proxyData.data.length > 0) {
+                    // Convert ip:port format to full proxy URLs
+                    this.residentialProxies = proxyData.data.map(p => `http://${p}`);
+                    this.lastProxyFetch = now;
+
+                    console.log(`✅ Got ${this.residentialProxies.length} residential proxies from 2Captcha:`);
+                    this.residentialProxies.forEach((p, i) => {
+                        console.log(`   ${i + 1}. ${p}`);
+                    });
+
+                    return this.residentialProxies;
+                } else {
+                    console.log('⚠️ Could not generate whitelist connections.');
+                    console.log('   Response:', JSON.stringify(proxyData));
+                    console.log('   💡 Make sure Render IP is whitelisted at: https://2captcha.com/enterpage/proxy/ip-whitelist');
+                }
+            } else {
+                console.log('⚠️ 2Captcha proxy account check failed:', statusData);
+            }
+        } catch (error) {
+            console.error('❌ Error fetching 2Captcha proxies:', error.message);
+        }
+
+        return [];
     }
 
     /**
      * Get next proxy from rotation pool
+     * First tries 2Captcha residential proxies, then falls back to pool
      */
-    getNextProxy() {
+    async getNextProxy() {
+        // Try to get 2Captcha residential proxies first (best option - residential IPs)
+        const residentialProxies = await this.fetch2CaptchaProxies();
+        if (residentialProxies.length > 0) {
+            // Rotate through residential proxies
+            const proxy = residentialProxies[this.currentProxyIndex % residentialProxies.length];
+            this.currentProxyIndex++;
+            console.log(`🏠 Using 2Captcha residential proxy: ${proxy}`);
+            return proxy;
+        }
+
+        // Fallback to static proxy pool
         if (this.proxyPool.length === 0) return null;
 
         // Try to find a proxy that hasn't failed recently
@@ -124,133 +202,141 @@ class GoogleSearchService {
 
             // Use proxy rotation if enabled
             if (useProxy) {
-                const proxyUrl = this.getNextProxy();
+                const proxyUrl = await this.getNextProxy();
                 if (proxyUrl) {
-                    // Extract proxy parts for Puppeteer
-                    // Format: https://username:password@host:port
-                    // Username can contain colons, so we need to match from the end
-                    const urlMatch = proxyUrl.match(/^https?:\/\/(?:([^@]+)@)?([^:]+):(\d+)$/);
-                    if (urlMatch) {
-                        const [, auth, host, port] = urlMatch;
+                    // 2Captcha whitelist proxies are simple format: http://ip:port (no auth needed)
+                    // Other proxies may have auth: https://username:password@host:port
+                    const simpleMatch = proxyUrl.match(/^https?:\/\/([^:@]+):(\d+)$/);
+                    const authMatch = proxyUrl.match(/^https?:\/\/([^@]+)@([^:]+):(\d+)$/);
+
+                    if (simpleMatch) {
+                        // Simple proxy without auth (2Captcha whitelist)
+                        const [, host, port] = simpleMatch;
+                        args.push(`--proxy-server=${host}:${port}`);
+                        this.currentProxyAuth = null;
+                        this.currentProxyInfo = { url: proxyUrl, host, port, username: null, password: null };
+                        console.log(`🌐 Using proxy: ${host}:${port} (no auth - whitelisted)`);
+                    } else if (authMatch) {
+                        // Proxy with auth
+                        const [, auth, host, port] = authMatch;
                         let username = null;
                         let password = null;
 
-                        if (auth) {
-                            // Split auth on last colon (password can't contain colons)
-                            const lastColonIndex = auth.lastIndexOf(':');
-                            if (lastColonIndex > 0) {
-                                username = auth.substring(0, lastColonIndex);
-                                password = auth.substring(lastColonIndex + 1);
-                            } else {
-                                username = auth;
-                            }
+                        // Split auth on last colon (password can't contain colons)
+                        const lastColonIndex = auth.lastIndexOf(':');
+                        if (lastColonIndex > 0) {
+                            username = auth.substring(0, lastColonIndex);
+                            password = auth.substring(lastColonIndex + 1);
+                        } else {
+                            username = auth;
                         }
 
                         args.push(`--proxy-server=${host}:${port}`);
-                        // Store proxy auth for later use
                         this.currentProxyAuth = username && password ? { username, password } : null;
                         this.currentProxyInfo = { url: proxyUrl, host, port, username, password };
                         console.log(`🌐 Using proxy: ${host}:${port}${username && password ? ' (authenticated)' : ''}`);
+                    } else {
+                        console.log(`⚠️ Could not parse proxy URL: ${proxyUrl}`);
                     }
-                } else if (this.proxyUrl) {
-                    // Fallback to single proxy from env
-                    const urlMatch = this.proxyUrl.match(/^https?:\/\/(?:([^@]+)@)?([^:]+):(\d+)$/);
-                    if (urlMatch) {
-                        const [, auth, host, port] = urlMatch;
-                        let username = null;
-                        let password = null;
+                }
+            } else if (this.proxyUrl) {
+                // Fallback to single proxy from env
+                const urlMatch = this.proxyUrl.match(/^https?:\/\/(?:([^@]+)@)?([^:]+):(\d+)$/);
+                if (urlMatch) {
+                    const [, auth, host, port] = urlMatch;
+                    let username = null;
+                    let password = null;
 
-                        if (auth) {
-                            const lastColonIndex = auth.lastIndexOf(':');
-                            if (lastColonIndex > 0) {
-                                username = auth.substring(0, lastColonIndex);
-                                password = auth.substring(lastColonIndex + 1);
-                            } else {
-                                username = auth;
-                            }
+                    if (auth) {
+                        const lastColonIndex = auth.lastIndexOf(':');
+                        if (lastColonIndex > 0) {
+                            username = auth.substring(0, lastColonIndex);
+                            password = auth.substring(lastColonIndex + 1);
+                        } else {
+                            username = auth;
                         }
-
-                        args.push(`--proxy-server=${host}:${port}`);
-                        this.currentProxyAuth = username && password ? { username, password } : null;
-                        this.currentProxyInfo = { url: this.proxyUrl, host, port, username, password };
-                        console.log(`🌐 Using proxy: ${host}:${port}${username && password ? ' (authenticated)' : ''}`);
                     }
+
+                    args.push(`--proxy-server=${host}:${port}`);
+                    this.currentProxyAuth = username && password ? { username, password } : null;
+                    this.currentProxyInfo = { url: this.proxyUrl, host, port, username, password };
+                    console.log(`🌐 Using proxy: ${host}:${port}${username && password ? ' (authenticated)' : ''}`);
                 }
             }
+        }
 
-            // Check if running in serverless environment or Render (which also needs chromium)
-            // Render sets RENDER=true, or we can detect by checking if chromium executable exists
-            const isServerless = process.env.AWS_LAMBDA_FUNCTION_VERSION ||
-                process.env.VERCEL ||
-                process.env.RENDER === 'true' ||
-                process.env.RENDER_SERVICE_ID; // Render sets this automatically
+        // Check if running in serverless environment or Render (which also needs chromium)
+        // Render sets RENDER=true, or we can detect by checking if chromium executable exists
+        const isServerless = process.env.AWS_LAMBDA_FUNCTION_VERSION ||
+            process.env.VERCEL ||
+            process.env.RENDER === 'true' ||
+            process.env.RENDER_SERVICE_ID; // Render sets this automatically
 
-            // Timeout configuration: longer for production/serverless
-            const browserLaunchTimeout = isServerless ? 60000 : 30000;
+        // Timeout configuration: longer for production/serverless
+        const browserLaunchTimeout = isServerless ? 60000 : 30000;
 
-            if (isServerless) {
-                console.log('🌐 Using @sparticuz/chromium for serverless environment');
+        if (isServerless) {
+            console.log('🌐 Using @sparticuz/chromium for serverless environment');
 
-                // Additional stealth args to avoid bot detection
-                const stealthArgs = [
-                    '--disable-blink-features=AutomationControlled',
-                    '--disable-features=IsolateOrigins,site-per-process',
-                    '--disable-infobars',
-                    '--window-size=1920,1080',
-                    '--start-maximized',
-                    '--disable-extensions',
-                    '--no-first-run',
-                    '--disable-default-apps',
-                    '--disable-popup-blocking',
-                    '--disable-translate',
-                    '--disable-background-timer-throttling',
-                    '--disable-backgrounding-occluded-windows',
-                    '--disable-renderer-backgrounding',
-                    '--disable-component-update',
-                    '--lang=nl-NL,nl',
-                    '--accept-lang=nl-NL,nl,en-US,en'
-                ];
+            // Additional stealth args to avoid bot detection
+            const stealthArgs = [
+                '--disable-blink-features=AutomationControlled',
+                '--disable-features=IsolateOrigins,site-per-process',
+                '--disable-infobars',
+                '--window-size=1920,1080',
+                '--start-maximized',
+                '--disable-extensions',
+                '--no-first-run',
+                '--disable-default-apps',
+                '--disable-popup-blocking',
+                '--disable-translate',
+                '--disable-background-timer-throttling',
+                '--disable-backgrounding-occluded-windows',
+                '--disable-renderer-backgrounding',
+                '--disable-component-update',
+                '--lang=nl-NL,nl',
+                '--accept-lang=nl-NL,nl,en-US,en'
+            ];
 
-                // Combine all args, removing duplicates
-                const allArgs = [...new Set([...chromium.args, ...args, ...stealthArgs])];
+            // Combine all args, removing duplicates
+            const allArgs = [...new Set([...chromium.args, ...args, ...stealthArgs])];
 
-                this.browser = await puppeteer.launch({
-                    args: allArgs,
-                    defaultViewport: { width: 1920, height: 1080 },
-                    executablePath: await chromium.executablePath(),
-                    headless: 'new', // Use new headless mode - harder to detect
-                    timeout: browserLaunchTimeout,
-                    ignoreDefaultArgs: ['--enable-automation'] // Remove automation flag
-                });
+            this.browser = await puppeteer.launch({
+                args: allArgs,
+                defaultViewport: { width: 1920, height: 1080 },
+                executablePath: await chromium.executablePath(),
+                headless: 'new', // Use new headless mode - harder to detect
+                timeout: browserLaunchTimeout,
+                ignoreDefaultArgs: ['--enable-automation'] // Remove automation flag
+            });
 
-                // Set default timeouts for all pages created from this browser in production
-                this.browser.on('targetcreated', async (target) => {
-                    const page = await target.page();
-                    if (page) {
-                        page.setDefaultNavigationTimeout(60000);
-                        page.setDefaultTimeout(60000);
-                    }
-                });
-            } else {
-                // Local environment - use regular puppeteer (not puppeteer-core)
-                try {
-                    const puppeteerRegular = require('puppeteer');
-                    this.browser = await puppeteerRegular.launch({
-                        headless: 'new',
-                        args,
-                        timeout: browserLaunchTimeout
-                    });
-                } catch (error) {
-                    // Fallback to chromium if regular puppeteer fails
-                    console.log('⚠️ Regular puppeteer failed, falling back to chromium:', error.message);
-                    this.browser = await puppeteer.launch({
-                        args: chromium.args.concat(args),
-                        defaultViewport: chromium.defaultViewport,
-                        executablePath: await chromium.executablePath(),
-                        headless: chromium.headless,
-                        timeout: browserLaunchTimeout
-                    });
+            // Set default timeouts for all pages created from this browser in production
+            this.browser.on('targetcreated', async (target) => {
+                const page = await target.page();
+                if (page) {
+                    page.setDefaultNavigationTimeout(60000);
+                    page.setDefaultTimeout(60000);
                 }
+            });
+        } else {
+            // Local environment - use regular puppeteer (not puppeteer-core)
+            try {
+                const puppeteerRegular = require('puppeteer');
+                this.browser = await puppeteerRegular.launch({
+                    headless: 'new',
+                    args,
+                    timeout: browserLaunchTimeout
+                });
+            } catch (error) {
+                // Fallback to chromium if regular puppeteer fails
+                console.log('⚠️ Regular puppeteer failed, falling back to chromium:', error.message);
+                this.browser = await puppeteer.launch({
+                    args: chromium.args.concat(args),
+                    defaultViewport: chromium.defaultViewport,
+                    executablePath: await chromium.executablePath(),
+                    headless: chromium.headless,
+                    timeout: browserLaunchTimeout
+                });
             }
         }
         return this.browser;
