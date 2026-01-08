@@ -2212,9 +2212,9 @@ Return JSON:
         }
 
         // ============================================
-        // STEP 6: Find Best Non-LinkedIn Match (if no LinkedIn)
+        // STEP 6: Find Best Non-LinkedIn Match (if no LinkedIn and not already matched)
         // ============================================
-        if (!linkedinInfo.bestMatch && platforms.websites.length > 0) {
+        if (!linkedinInfo.bestMatch && !fallbackMatch && platforms.websites.length > 0) {
             console.log('🌐 Step 6: Analyzing alternative profiles...');
             let nonLinkedIn = [...platforms.websites, ...platforms.news];
 
@@ -2315,7 +2315,8 @@ Return JSON:
         let newsInfo = { articles: [], results: [] };
 
         // Deep scrape if it's a fallback match (not LinkedIn)
-        if (fallbackMatch && fallbackMatch.url && !fallbackMatch.url.includes('linkedin.com')) {
+        // SKIP deep scrape for celebrities - snippets are usually sufficient and it saves 30+ seconds
+        if (fallbackMatch && fallbackMatch.url && !fallbackMatch.url.includes('linkedin.com') && !celebrityInfo.isCelebrity) {
             const deepContent = await googleSearch.fetchPageContent(fallbackMatch.url, 8000);
             if (deepContent) {
                 fallbackMatch.deepContent = deepContent;
