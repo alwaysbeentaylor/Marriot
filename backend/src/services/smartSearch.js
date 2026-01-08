@@ -1972,6 +1972,12 @@ Return JSON:
             guest.company = effectiveCompany;
         }
 
+        // Initialize search state
+        const allResults = [];
+        const seenUrls = new Set();
+        let linkedInFound = false;
+        let googleFailed = false;
+
         // ============================================
         // STEP 1: Celebrity Probe (Dedicated Broad Search)
         // ============================================
