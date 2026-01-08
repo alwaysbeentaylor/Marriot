@@ -396,7 +396,7 @@ Return JSON:
         });
     }
 
-    async selectBestMatchWithAI(guest, searchResults) {
+    async selectBestMatchWithAI(guest, searchResults, celebrityInfo = null) {
         const openai = this.getOpenAI();
         if (!openai) return null;
 
@@ -413,6 +413,8 @@ GUEST:
 Name: ${guest.full_name}
 Company: ${guest.company || 'Unknown'}
 Country: ${guest.country || 'Unknown'}
+
+${celebrityInfo?.isCelebrity ? `SUSPECTED PUBLIC FIGURE: ${celebrityInfo.knownFor} (Confidence: ${celebrityInfo.confidence})` : ''}
 
 SEARCH RESULTS:
 ${resultsInfo}
@@ -1865,6 +1867,71 @@ Genereer een GEDETAILLEERD JSON-antwoord:
     }
 
     /**
+     * Use AI to detect if a person is a public figure based on early broad search results.
+     * This helps distinguish between famous people and regular namesakes.
+     */
+    async detectCelebrityWithAI(guest, broadResults) {
+        if (!broadResults || broadResults.length === 0) return null;
+
+        const openai = this.getOpenAI();
+        if (!openai) return null;
+
+        try {
+            const resultsText = broadResults.map((r, i) =>
+                `Result ${i}: ${r.title}\nSnippet: ${r.snippet}\nURL: ${r.link}`
+            ).join('\n\n');
+
+            const prompt = `Analyze these search results for the person "${guest.full_name}" from "${guest.country || 'Unknown'}".
+Determine if this person is a Public Figure (Celebrity, Artist, Presenter, Athlete, Politician, etc.) or just a regular private citizen.
+
+SEARCH RESULTS:
+${resultsText}
+
+CRITICAL: 
+- Look for Wikipedia, IMDb, News Articles, Verified Social Media, or descriptions like "Dutch presenter", "Singer", "Actor".
+- If the results clearly point to a famous person, identify them.
+- If the results are mixed (some famous, some regular), prioritize the famous one as the likely target for this premium hotel system.
+
+Return JSON:
+{
+  "isPublicFigure": boolean,
+  "confidence": number (0-1),
+  "category": string (e.g. 'entertainment', 'sports', 'business', 'none'),
+  "knownFor": string (short description),
+  "reason": string (short explanation)
+}`;
+
+            const response = await openai.chat.completions.create({
+                model: 'gpt-4o-mini',
+                messages: [
+                    { role: 'system', content: 'You are an expert in identifying public figures and notable personalities.' },
+                    { role: 'user', content: prompt }
+                ],
+                temperature: 0,
+                response_format: { type: "json_object" }
+            });
+
+            const result = JSON.parse(response.choices[0].message.content);
+
+            if (result.isPublicFigure && result.confidence >= 0.7) {
+                console.log(`🌟 AI detected Public Figure: ${guest.full_name} (${result.knownFor}) - Conf: ${result.confidence}`);
+                return {
+                    isCelebrity: true,
+                    confidence: result.confidence,
+                    category: result.category,
+                    knownFor: result.knownFor,
+                    source: 'ai_early_detection'
+                };
+            }
+
+            return null;
+        } catch (error) {
+            console.error('Error in early celebrity detection:', error);
+            return null;
+        }
+    }
+
+    /**
      * ULTIMATE FINDER - Main search function for guest research
      * Strategy: Collect EVERYTHING first, then analyze
      * 
@@ -1879,9 +1946,9 @@ Genereer een GEDETAILLEERD JSON-antwoord:
         const startTime = Date.now();
 
         // ============================================
-        // SKIP Knowledge Graph - AI will detect celebrities during analysis
+        // STEP 0.5: Celebrity Detection (AI will detect public figures early)
         // ============================================
-        const celebrityInfo = { isCelebrity: false, confidence: 0, category: null, knownFor: null };
+        let celebrityInfo = { isCelebrity: false, confidence: 0, category: null, knownFor: null };
 
         let linkedinInfo = { candidates: [], bestMatch: null, needsReview: false };
         let fallbackMatch = null;
@@ -2005,6 +2072,14 @@ Genereer een GEDETAILLEERD JSON-antwoord:
                 }
             });
 
+            // AFTER THE FIRST BATCH: Check for celebrity status using AI early
+            if (i === 0 && !celebrityInfo.isCelebrity && allResults.length > 0) {
+                const aiDetection = await this.detectCelebrityWithAI(guest, allResults);
+                if (aiDetection) {
+                    celebrityInfo = aiDetection;
+                }
+            }
+
             // Stop if we found LinkedIn and have enough results
             if (linkedInFound && allResults.length >= 3) {
                 console.log(`   ✅ Sufficient results found - stopping after ${i + chunk.length} queries`);
@@ -2104,7 +2179,7 @@ Genereer een GEDETAILLEERD JSON-antwoord:
         }).slice(0, 15);
 
         console.log(`🤖 AI Matching: Analyzing ${aiCandidates.length} potential matches (LinkedIn and Broad search)...`);
-        const aiResult = await this.selectBestMatchWithAI(guest, aiCandidates);
+        const aiResult = await this.selectBestMatchWithAI(guest, aiCandidates, celebrityInfo);
 
         if (aiResult && aiResult.confidence >= 0.6) {
             const isLinkedIn = aiResult.url?.includes('linkedin.com/in/');
@@ -2172,7 +2247,7 @@ Genereer een GEDETAILLEERD JSON-antwoord:
             }
 
             if (nonLinkedIn.length > 0) {
-                const aiResult = await this.selectBestMatchWithAI(guest, nonLinkedIn);
+                const aiResult = await this.selectBestMatchWithAI(guest, nonLinkedIn, celebrityInfo);
                 if (aiResult && aiResult.confidence >= 0.7) {
                     console.log(`✨ Alternative match found: ${aiResult.url}`);
                     fallbackMatch = aiResult;
