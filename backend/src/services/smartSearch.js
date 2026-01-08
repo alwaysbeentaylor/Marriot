@@ -135,13 +135,13 @@ class SmartSearchService {
                 .split(' ')
                 .map(word => word.charAt(0).toUpperCase() + word.slice(1))
                 .join('');
-            
+
             console.log(`   📌 Domain suggests company: ${domainCompanyName}`);
-            
+
             // Step 2: Try Google search for more info (but don't fail if captcha)
             const websiteUrl = `https://${domain}`;
             let companyResults = [];
-            
+
             try {
                 console.log(`   🔍 Searching Google for company info: ${domain}`);
                 companyResults = await googleSearch.search(`"${domain}" company`, 3) || [];
@@ -154,9 +154,9 @@ class SmartSearchService {
             const openai = this.getOpenAI();
             if (!openai) {
                 // Fallback without AI - use domain name as company
-                return { 
-                    domain, 
-                    websiteUrl, 
+                return {
+                    domain,
+                    websiteUrl,
                     companyName: domainCompanyName,
                     industry: 'Unknown',
                     companySize: 'Unknown'
@@ -241,9 +241,9 @@ Return JSON:
                 .map(word => word.charAt(0).toUpperCase() + word.slice(1))
                 .join('');
             console.log(`   📌 Using fallback company name: ${fallbackName}`);
-            return { 
-                domain, 
-                websiteUrl: `https://${domain}`, 
+            return {
+                domain,
+                websiteUrl: `https://${domain}`,
                 companyName: fallbackName,
                 industry: 'Unknown',
                 companySize: 'Unknown',
@@ -284,7 +284,7 @@ Return JSON:
             'egypte': ['Egypt', 'EG', 'Cairo'],
             'egypt': ['Egypt', 'EG', 'Cairo'],
         };
-        
+
         return terms[countryLower] || [country];
     }
 
@@ -294,7 +294,7 @@ Return JSON:
      */
     filterResultsByCountry(results, targetCountry) {
         if (!targetCountry) return results; // No country specified, return all
-        
+
         // Normalize country names (common variations)
         const countryMap = {
             'nederland': ['nederland', 'netherlands', 'nl', 'holland', 'amsterdam', 'rotterdam', 'utrecht', 'den haag', 'the hague', 'eindhoven', 'groningen'],
@@ -315,37 +315,37 @@ Return JSON:
             'egypte': ['egypte', 'egypt', 'eg', 'cairo', 'alexandria', 'giza'],
             'egypt': ['egypte', 'egypt', 'eg', 'cairo', 'alexandria', 'giza'],
         };
-        
+
         const normalizedTarget = targetCountry.toLowerCase().trim();
         const searchTerms = countryMap[normalizedTarget] || [normalizedTarget];
-        
+
         // Get all other countries' terms for conflict detection
         const allOtherTerms = Object.entries(countryMap)
             .filter(([key]) => !searchTerms.some(st => key.includes(normalizedTarget) || normalizedTarget.includes(key)))
             .flatMap(([, terms]) => terms);
-        
+
         return results.filter(result => {
             const text = `${result.title || ''} ${result.snippet || ''} ${result.link || ''}`.toLowerCase();
-            
+
             // Check if any country indicator is present
             const hasCountryMatch = searchTerms.some(term => text.includes(term.toLowerCase()));
-            
+
             // Check for conflicting countries (e.g., result mentions "Cairo" but target is "Nederland")
             const hasConflictingCountry = allOtherTerms.some(term => {
                 // Only flag if it's a strong indicator (city names, not just common words)
                 const strongIndicators = ['cairo', 'amsterdam', 'london', 'paris', 'berlin', 'madrid', 'rome', 'brussels', 'antwerp', 'rotterdam', 'utrecht', 'alexandria', 'giza'];
                 return strongIndicators.includes(term.toLowerCase()) && text.includes(term.toLowerCase()) && !hasCountryMatch;
             });
-            
+
             // If we have a country match, include it
             if (hasCountryMatch) return true;
-            
+
             // If there's a conflicting country indicator, exclude it
             if (hasConflictingCountry) {
                 console.log(`   🚫 Excluding result (wrong country): ${result.title?.substring(0, 50)}...`);
                 return false;
             }
-            
+
             // If no country info found, include it (might be generic/global)
             return true;
         });
@@ -470,7 +470,7 @@ Return JSON:
                     }
                     console.log(`✅ Location verified: "${finalLocation}" matches guest country: "${guest.country}"`);
                 }
-                
+
                 console.log(`✨ Match found! ${bestSource.link} (Conf: ${result.confidence})`);
 
                 // Log what the AI extracted
@@ -1295,16 +1295,16 @@ Return JSON:
         try {
             // FAST MODE: Single quick search, max 3 results, no AI verification
             console.log(`📰 Quick news search for ${guestName}...`);
-            
+
             // Use Google for news search
             const articles = await googleSearch.search(`"${guestName}" news`, 3);
 
             if (articles.length > 0) {
                 console.log(`📰 Found ${articles.length} news articles`);
-                    return {
+                return {
                     articles: articles.slice(0, 3), // Max 3 articles
-                        hasNews: true
-                    };
+                    hasNews: true
+                };
             }
 
             console.log(`📰 No news found for ${guestName}`);
@@ -1845,7 +1845,7 @@ Genereer een GEDETAILLEERD JSON-antwoord:
         // ============================================
         let emailDomainInfo = null;
         let effectiveCompany = guest.company;
-        
+
         if (guest.email && !guest.company) {
             console.log('📧 Step 0: Analyzing email domain to find company...');
             emailDomainInfo = await this.extractCompanyFromEmail(guest);
@@ -1864,10 +1864,10 @@ Genereer een GEDETAILLEERD JSON-antwoord:
         // ============================================
         console.log('🔍 Step 1: Building priority search queries...');
         const priorityQueries = [];
-        
+
         // LinkedIn queries (always first)
         priorityQueries.push(`site:linkedin.com/in "${guest.full_name}"`);
-        
+
         // Add country-specific queries with common country name variations
         if (guest.country) {
             const countryTerms = this.getCountrySearchTerms(guest.country);
@@ -1875,7 +1875,7 @@ Genereer een GEDETAILLEERD JSON-antwoord:
                 priorityQueries.push(`site:linkedin.com/in "${guest.full_name}" ${term}`.trim());
             });
         }
-        
+
         // ALWAYS add name + company if known (from input OR email domain)
         if (effectiveCompany) {
             priorityQueries.push(`"${guest.full_name}" "${effectiveCompany}"`);
@@ -1888,7 +1888,7 @@ Genereer een GEDETAILLEERD JSON-antwoord:
                 priorityQueries.push(`"${guest.full_name}" ${effectiveCompany} ${guest.country || ''}`.trim());
             }
         }
-        
+
         // Add name + location if city known
         if (guest.city) {
             if (guest.country) {
@@ -1900,10 +1900,10 @@ Genereer een GEDETAILLEERD JSON-antwoord:
                 priorityQueries.push(`"${guest.full_name}" ${guest.city} ${guest.country || ''}`.trim());
             }
         }
-        
+
         // Remove duplicates and filter short queries
         const uniqueQueries = [...new Set(priorityQueries)].filter(q => q.length > 15);
-        
+
         console.log(`📝 Using ${uniqueQueries.length} priority queries`);
         if (effectiveCompany) {
             console.log(`   📌 Including company: ${effectiveCompany}`);
@@ -1916,57 +1916,55 @@ Genereer een GEDETAILLEERD JSON-antwoord:
         const seenUrls = new Set();
         let linkedInFound = false;
         let googleFailed = false;
-        
-        // Helper function for delay
-        const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-        
+
         // Try Google Search first (better quality results)
         console.log('🔍 Step 2: Using Google Search (primary - better results)...');
-        
-        for (let i = 0; i < uniqueQueries.length; i++) {
-            const query = uniqueQueries[i];
-            try {
-                console.log(`   🔎 Query ${i + 1}/${uniqueQueries.length}: ${query.substring(0, 60)}...`);
-                const results = await googleSearch.search(query, 5);
-                
-                console.log(`   📊 Query returned ${results?.length || 0} results`);
-                
-                if (!results || results.length === 0) {
-                    console.log(`   ⚠️ No results for query: ${query.substring(0, 50)}...`);
-                    if (i === 0) {
+
+        // Execute queries in chunks of 3 for parallel speed but safety
+        const CHUNK_SIZE = 3;
+        for (let i = 0; i < uniqueQueries.length; i += CHUNK_SIZE) {
+            const chunk = uniqueQueries.slice(i, i + CHUNK_SIZE);
+            console.log(`   🔎 Processing batch of ${chunk.length} queries...`);
+
+            const chunkPromises = chunk.map(query => googleSearch.search(query, 5));
+            const chunkResults = await Promise.allSettled(chunkPromises);
+
+            chunkResults.forEach((res, index) => {
+                const query = chunk[index];
+                if (res.status === 'fulfilled' && res.value) {
+                    const results = res.value;
+                    console.log(`   📊 Query "${query.substring(0, 30)}..." returned ${results.length} results`);
+
+                    if (results.length === 0 && i + index === 0) {
                         googleFailed = true;
                     }
-                }
-                
-                for (const result of (results || [])) {
-                    if (result.link && !seenUrls.has(result.link)) {
-                        seenUrls.add(result.link);
-                        allResults.push(result);
-                        
-                        if (result.link.includes('linkedin.com/in/')) {
-                            linkedInFound = true;
-                            console.log(`   ✅ LinkedIn profile found: ${result.link}`);
+
+                    for (const result of results) {
+                        if (result.link && !seenUrls.has(result.link)) {
+                            seenUrls.add(result.link);
+                            allResults.push(result);
+
+                            if (result.link.includes('linkedin.com/in/')) {
+                                linkedInFound = true;
+                                console.log(`   ✅ LinkedIn profile found: ${result.link}`);
+                            }
                         }
                     }
+                } else {
+                    console.error(`   ❌ Query failed: ${query.substring(0, 50)}...`);
+                    if (i + index === 0) googleFailed = true;
                 }
-                
-                if (linkedInFound && allResults.length >= 2) {
-                    console.log(`   ✅ LinkedIn found with sufficient results - stopping early after ${i + 1} queries`);
-                    break;
-                }
-                
-                if (i < uniqueQueries.length - 1 && !linkedInFound) {
-                    await delay(1500);
-                }
-            } catch (error) {
-                console.error(`   ❌ Query failed: ${query.substring(0, 50)}...`);
-                console.error(`   Error: ${error.message}`);
-                if (i === 0) {
-                    googleFailed = true;
-                }
+            });
+
+            // Stop if we found LinkedIn and have enough results
+            if (linkedInFound && allResults.length >= 3) {
+                console.log(`   ✅ Sufficient results found - stopping after ${i + chunk.length} queries`);
+                break;
             }
+
+            // No more delay needed between batches when using SERP API
         }
-        
+
         // Google-only: No Brave fallback - using Google exclusively as requested
         if (googleFailed && allResults.length === 0) {
             console.log('⚠️ Google search failed - no results found. Will continue with empty results.');
@@ -1976,7 +1974,7 @@ Genereer een GEDETAILLEERD JSON-antwoord:
         if (allResults.length === 0) {
             console.log('⚠️ No results found, trying fallback queries...');
             const fallbackQueries = [];
-            
+
             // Add country-specific fallback queries
             if (guest.country) {
                 const countryTerms = this.getCountrySearchTerms(guest.country);
@@ -1986,13 +1984,13 @@ Genereer een GEDETAILLEERD JSON-antwoord:
             } else {
                 fallbackQueries.push(`"${guest.full_name}" ${guest.country || ''}`.trim());
             }
-            
+
             if (effectiveCompany) {
                 fallbackQueries.push(`"${guest.full_name}" ${effectiveCompany}`);
             }
-            
+
             const finalFallbackQueries = fallbackQueries.filter(Boolean).slice(0, 2);
-            
+
             for (const query of finalFallbackQueries) {
                 try {
                     console.log(`   🔎 Fallback: ${query.substring(0, 60)}...`);
@@ -2012,7 +2010,7 @@ Genereer een GEDETAILLEERD JSON-antwoord:
         }
 
         console.log(`✅ Collected ${allResults.length} unique results`);
-        
+
         if (allResults.length === 0) {
             console.error('❌ CRITICAL: No search results found at all!');
             console.error('   Possible causes:');
@@ -2028,7 +2026,7 @@ Genereer een GEDETAILLEERD JSON-antwoord:
         // ============================================
         console.log('🎯 Step 4: Extracting platform profiles...');
         const platforms = this.extractPlatformProfiles(allResults);
-        
+
         console.log(`   📊 LinkedIn: ${platforms.linkedin.length} profiles`);
         console.log(`   📊 Facebook: ${platforms.facebook.length} profiles`);
         console.log(`   📊 GitHub: ${platforms.github.length} profiles`);
@@ -2042,7 +2040,7 @@ Genereer een GEDETAILLEERD JSON-antwoord:
         // ============================================
         if (platforms.linkedin.length > 0) {
             console.log('💼 Step 5: Analyzing LinkedIn candidates...');
-            
+
             // Filter LinkedIn results by country if country is specified
             let filteredLinkedIn = platforms.linkedin;
             if (guest.country) {
@@ -2053,9 +2051,9 @@ Genereer een GEDETAILLEERD JSON-antwoord:
                     console.log(`   🌍 Filtered LinkedIn results by country (${guest.country}): ${beforeCount} → ${afterCount}`);
                 }
             }
-            
+
             const aiResult = await this.selectBestMatchWithAI(guest, filteredLinkedIn);
-            
+
             if (aiResult && aiResult.confidence >= 0.6) {
                 // CRITICAL: Verify location matches guest's country BEFORE extracting any data
                 // Check both extracted location AND the snippet/title for location indicators
@@ -2071,11 +2069,11 @@ Genereer een GEDETAILLEERD JSON-antwoord:
                         console.log(`✅ LinkedIn location verified for guest country: "${guest.country}"`);
                     }
                 }
-                
+
                 // Only process if location matches (or no country specified)
                 if (!locationMismatch) {
                     console.log(`✨ LinkedIn match found! (${Math.round(aiResult.confidence * 100)}% confidence)`);
-                    
+
                     // Extract job title and company
                     let extractedJobTitle = aiResult.jobTitle;
                     let extractedCompany = aiResult.company;
@@ -2120,7 +2118,7 @@ Genereer een GEDETAILLEERD JSON-antwoord:
         if (!linkedinInfo.bestMatch && platforms.websites.length > 0) {
             console.log('🌐 Step 6: Analyzing alternative profiles...');
             let nonLinkedIn = [...platforms.websites, ...platforms.news];
-            
+
             // Filter by country if specified
             if (guest.country && nonLinkedIn.length > 0) {
                 const beforeCount = nonLinkedIn.length;
@@ -2130,7 +2128,7 @@ Genereer een GEDETAILLEERD JSON-antwoord:
                     console.log(`   🌍 Filtered alternative results by country (${guest.country}): ${beforeCount} → ${afterCount}`);
                 }
             }
-            
+
             if (nonLinkedIn.length > 0) {
                 const aiResult = await this.selectBestMatchWithAI(guest, nonLinkedIn);
                 if (aiResult && aiResult.confidence >= 0.7) {
@@ -2163,45 +2161,45 @@ Genereer een GEDETAILLEERD JSON-antwoord:
         };
 
         const isSocialMedia = (url) => {
-            const socialDomains = ['linkedin.com', 'facebook.com', 'twitter.com', 'x.com', 
+            const socialDomains = ['linkedin.com', 'facebook.com', 'twitter.com', 'x.com',
                 'instagram.com', 'tiktok.com', 'youtube.com', 'github.com'];
             return socialDomains.some(domain => url?.toLowerCase().includes(domain));
         };
 
         return {
-            linkedin: results.filter(r => 
-                r.link?.includes('linkedin.com/in/') && 
+            linkedin: results.filter(r =>
+                r.link?.includes('linkedin.com/in/') &&
                 !r.link?.includes('/posts/') &&
                 !r.link?.includes('/pulse/')
             ),
-            facebook: results.filter(r => 
-                r.link?.includes('facebook.com/') && 
+            facebook: results.filter(r =>
+                r.link?.includes('facebook.com/') &&
                 !r.link?.includes('/posts/') &&
                 !r.link?.includes('/photos/') &&
                 !r.link?.includes('/events/')
             ),
-            github: results.filter(r => 
+            github: results.filter(r =>
                 r.link?.includes('github.com/') &&
                 !r.link?.includes('/issues/') &&
                 !r.link?.includes('/pull/')
             ),
-            twitter: results.filter(r => 
+            twitter: results.filter(r =>
                 (r.link?.includes('twitter.com/') || r.link?.includes('x.com/')) &&
                 !r.link?.includes('/status/')
             ),
-            instagram: results.filter(r => 
+            instagram: results.filter(r =>
                 r.link?.includes('instagram.com/') &&
                 !r.link?.includes('/p/') &&
                 !r.link?.includes('/reel/')
             ),
-            youtube: results.filter(r => 
+            youtube: results.filter(r =>
                 r.link?.includes('youtube.com/') &&
                 (r.link?.includes('/@') || r.link?.includes('/c/') || r.link?.includes('/user/'))
             ),
             news: results.filter(r => isNewsSource(r.link)),
-            websites: results.filter(r => 
-                r.link && 
-                !isSocialMedia(r.link) && 
+            websites: results.filter(r =>
+                r.link &&
+                !isSocialMedia(r.link) &&
                 !isNewsSource(r.link) &&
                 !r.link?.includes('wikipedia.org')
             )
@@ -2259,47 +2257,78 @@ Genereer een GEDETAILLEERD JSON-antwoord:
         const shouldSearchSocials = this.shouldSearchSocialMedia(celebrityInfo, linkedinInfo, { hasCompanyFromEmail });
 
         if (shouldSearchSocials) {
-            console.log(`🔍 Searching social media presence...`);
+            console.log(`🔍 Searching social media presence (parallel)...`);
 
             // Determine priority based on celebrity type (or default)
             const priority = celebrityInfo.socialMediaPriority || 'both';
 
+            // Prepare search promises
+            const searchPromises = [];
+            let instagramIdx = -1;
+            let twitterIdx = -1;
+
             if (priority === 'instagram' || priority === 'both') {
-                instagramResult = await this.searchInstagram(guest);
-                // Verify celebrity socials
-                if (celebrityInfo.isCelebrity) {
-                    instagramResult = await this.verifySocialMediaRelevance(guest, instagramResult, celebrityInfo, 'instagram');
-                }
+                instagramIdx = searchPromises.length;
+                searchPromises.push(this.searchInstagram(guest));
             }
 
             if (priority === 'twitter' || priority === 'both') {
-                twitterResult = await this.searchTwitter(guest);
-                // Verify celebrity socials
-                if (celebrityInfo.isCelebrity) {
-                    twitterResult = await this.verifySocialMediaRelevance(guest, twitterResult, celebrityInfo, 'twitter');
+                twitterIdx = searchPromises.length;
+                searchPromises.push(this.searchTwitter(guest));
+            }
+
+            // Always search news in parallel too
+            const newsIdx = searchPromises.length;
+            searchPromises.push(this.searchRecentNews(guest));
+
+            // Wait for all searches to complete (or fail)
+            const results = await Promise.allSettled(searchPromises);
+
+            // Extract results
+            if (instagramIdx !== -1) {
+                const res = results[instagramIdx];
+                if (res.status === 'fulfilled') {
+                    instagramResult = res.value;
+                    if (celebrityInfo.isCelebrity) {
+                        instagramResult = await this.verifySocialMediaRelevance(guest, instagramResult, celebrityInfo, 'instagram');
+                    }
                 }
             }
 
-            // If nothing found on priority platform, try the other as fallback
-            if (priority === 'instagram' && !instagramResult.url) {
+            if (twitterIdx !== -1) {
+                const res = results[twitterIdx];
+                if (res.status === 'fulfilled') {
+                    twitterResult = res.value;
+                    if (celebrityInfo.isCelebrity) {
+                        twitterResult = await this.verifySocialMediaRelevance(guest, twitterResult, celebrityInfo, 'twitter');
+                    }
+                }
+            }
+
+            // News Info Result
+            const newsRes = results[newsIdx];
+            if (newsRes && newsRes.status === 'fulfilled') {
+                newsInfo = newsRes.value;
+            }
+
+            // If nothing found on priority platform, try the other as fallback (if not already searched)
+            if (priority === 'instagram' && !instagramResult.url && twitterIdx === -1) {
                 twitterResult = await this.searchTwitter(guest);
-            } else if (priority === 'twitter' && !twitterResult.url) {
+            } else if (priority === 'twitter' && !twitterResult.url && instagramIdx === -1) {
                 instagramResult = await this.searchInstagram(guest);
             }
         } else {
             console.log(`📋 Skipping social media search for business guest (LinkedIn is sufficient)`);
+            // Still search news for business guests
+            newsInfo = await this.searchRecentNews(guest);
         }
-        // -----------------------------------------------
-
-        // --- NEW: News Research ---
-        const newsInfo = await this.searchRecentNews(guest);
         // --------------------------
 
         // --- Company Research (FAST MODE) ---
         // 1x Google search, AI extracts info from snippets, NO website scraping
         let companyInfo = null;
         const targetCompany = guest.company || (linkedinInfo.bestMatch && linkedinInfo.bestMatch.company);
-        
+
         if (targetCompany) {
             console.log(`🏢 Quick company lookup: ${targetCompany}`);
             // companyScraper already extracts info from snippets via AI
@@ -2352,13 +2381,13 @@ Genereer een GEDETAILLEERD JSON-antwoord:
             null;
 
         // If no job title found, but email domain indicates possible owner, use "Mogelijke eigenaar"
-        if (!effectiveJobTitle && emailDomainInfo?.ownerLabel && 
-            (emailDomainInfo.ownerLabel.includes('Possible owner') || 
-             emailDomainInfo.ownerLabel.includes('Mogelijke eigenaar') ||
-             emailDomainInfo.ownerLabel.includes('Likely owner'))) {
+        if (!effectiveJobTitle && emailDomainInfo?.ownerLabel &&
+            (emailDomainInfo.ownerLabel.includes('Possible owner') ||
+                emailDomainInfo.ownerLabel.includes('Mogelijke eigenaar') ||
+                emailDomainInfo.ownerLabel.includes('Likely owner'))) {
             effectiveJobTitle = 'Mogelijke eigenaar';
         }
-        
+
         // Only use AI-generated current_role if we still don't have a job title
         if (!effectiveJobTitle) {
             effectiveJobTitle = analysis.full_report?.professional_background?.current_role ||
@@ -2440,22 +2469,22 @@ Genereer een GEDETAILLEERD JSON-antwoord:
         const hasInstagram = instagramResult.url;
         const hasNews = newsInfo.articles?.length > 0;
         const hasCelebrityInfo = celebrityInfo.isCelebrity;
-        
+
         // Instagram only counts as a result if:
         // 1. It's a celebrity/artist (social media is relevant for them)
         // 2. OR there are other "hard" results (LinkedIn, company, job title, Twitter, news)
         // NOTE: hasAnalysis is NOT included because AI always generates a VIP score even without real data
         // If only Instagram is found and it's not a celebrity, treat as no results
         const hasHardResults = hasLinkedIn || hasCompany || hasJobTitle || hasTwitter || hasNews;
-        const hasMeaningfulSocialMedia = hasTwitter || 
+        const hasMeaningfulSocialMedia = hasTwitter ||
             (hasInstagram && (hasCelebrityInfo || hasHardResults));
-        
+
         // Determine if Instagram should be included in results
         // Only include if: celebrity OR (Instagram AND other "hard" results exist)
         // If ONLY Instagram is found (no LinkedIn, company, job title, etc.), exclude it
         // NOTE: hasAnalysis is intentionally NOT included - AI always generates scores even without real data
         const shouldIncludeInstagram = hasCelebrityInfo || (hasInstagram && hasHardResults);
-        
+
         // Debug logging
         if (hasInstagram) {
             if (shouldIncludeInstagram) {

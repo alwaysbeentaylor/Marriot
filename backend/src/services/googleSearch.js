@@ -12,7 +12,7 @@ class GoogleSearchService {
     constructor() {
         this.browser = null;
         this.lastRequestTime = 0;
-        this.minDelay = parseInt(process.env.GOOGLE_SEARCH_DELAY || '1000'); // 1 second between SERP API calls
+        this.minDelay = 0; // No artificial delay for SERP API
         this.apiKey = process.env.TWO_CAPTCHA_API_KEY;
         this.proxyUrl = process.env.PROXY_URL;
         this.proxyAgent = this.proxyUrl ? new HttpsProxyAgent(this.proxyUrl) : null;
@@ -60,7 +60,8 @@ class GoogleSearchService {
             console.log(`🔍 SERP API: Searching "${query.substring(0, 50)}..."`);
 
             // Build Google search URL with parameters
-            const searchUrl = `https://www.google.nl/search?q=${encodeURIComponent(query)}&hl=nl&num=${maxResults}`;
+            // Adding brd_json=1 to the URL is the correct way for Bright Data SERP API to return JSON
+            const searchUrl = `https://www.google.nl/search?q=${encodeURIComponent(query)}&hl=nl&num=${maxResults}&brd_json=1`;
 
             const response = await fetch(this.serpApiEndpoint, {
                 method: 'POST',
@@ -71,7 +72,7 @@ class GoogleSearchService {
                 body: JSON.stringify({
                     zone: this.serpApiZone,
                     url: searchUrl,
-                    format: 'raw'
+                    format: 'raw' // Even with format: raw, the brd_json=1 parameter makes it return JSON string
                 })
             });
 
@@ -81,17 +82,31 @@ class GoogleSearchService {
                 return null;
             }
 
-            const html = await response.text();
-            console.log(`✅ SERP API: Got response (${html.length} chars)`);
+            const data = await response.json();
+            console.log(`✅ SERP API: Got JSON response`);
 
-            // Parse the HTML response to extract search results
-            const results = this.parseGoogleHtml(html, maxResults);
+            // Extract results from JSON
+            let results = [];
+            if (data.organic) {
+                results = data.organic.map(item => ({
+                    link: item.link || item.url,
+                    title: item.title,
+                    snippet: item.snippet || item.description || ''
+                }));
+            } else if (data.results) {
+                results = data.results.map(item => ({
+                    link: item.url || item.link,
+                    title: item.title,
+                    snippet: item.snippet || ''
+                }));
+            }
+
             console.log(`📊 SERP API: Parsed ${results.length} results`);
-
-            return results;
+            return results.slice(0, maxResults);
 
         } catch (error) {
             console.error(`❌ SERP API error: ${error.message}`);
+            // If JSON parsing fails, maybe it returned raw HTML?
             return null;
         }
     }
