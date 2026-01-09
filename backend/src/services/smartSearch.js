@@ -2055,29 +2055,22 @@ Return JSON:
             console.log('🔍 Step 2: Building targeted search queries (Normal person search)...');
             const priorityQueries = [];
 
-            // LinkedIn queries (already did one broad one in probe, now targeted)
+            // SPEED OPTIMIZATION: Only 2 queries maximum
+            // Query 1: LinkedIn search (most important)
             priorityQueries.push(`site:linkedin.com/in "${guest.full_name}"`);
 
-            // Add country-specific queries with common country name variations
-            if (guest.country) {
-                const countryTerms = this.getCountrySearchTerms(guest.country);
-                countryTerms.forEach(term => {
-                    priorityQueries.push(`site:linkedin.com/in "${guest.full_name}" ${term}`.trim());
-                });
-            }
-
-            // ALWAYS add name + company if known (from input OR email domain)
+            // Query 2: Name + Company (if known) - helps find the right person
             if (effectiveCompany) {
                 priorityQueries.push(`"${guest.full_name}" "${effectiveCompany}"`);
-                if (guest.country) {
-                    const countryTerms = this.getCountrySearchTerms(guest.country);
-                    countryTerms.forEach(term => {
-                        priorityQueries.push(`"${guest.full_name}" ${effectiveCompany} ${term}`.trim());
-                    });
+            } else if (guest.country) {
+                // Only add country if no company known
+                const mainCountryTerm = this.getCountrySearchTerms(guest.country)[0];
+                if (mainCountryTerm) {
+                    priorityQueries.push(`site:linkedin.com/in "${guest.full_name}" ${mainCountryTerm}`);
                 }
             }
 
-            // Remove duplicates and filter short queries
+            // Remove duplicates
             const uniqueQueries = [...new Set(priorityQueries)].filter(q => q.length > 15 && q !== probeQuery);
 
             console.log(`📝 Using ${uniqueQueries.length} targeted queries`);
