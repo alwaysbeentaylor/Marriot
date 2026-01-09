@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import vipIcon from '../../assets/vip-icon.png';
+import vipIcon from '../../assets/vip-brain.png';
 
 function WelcomeModal({ forceOpen = false, onClose }) {
     const [isOpen, setIsOpen] = useState(forceOpen);
@@ -52,13 +52,13 @@ function WelcomeModal({ forceOpen = false, onClose }) {
 
                     {/* VIP Icon */}
                     <div
-                        className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-white shadow-2xl mb-4 p-2 relative z-10"
+                        className="inline-flex items-center justify-center w-28 h-28 rounded-full bg-white shadow-2xl mb-4 p-4 relative z-10 overflow-hidden"
                         style={{ boxShadow: '0 10px 40px rgba(0,0,0,0.15)' }}
                     >
                         <img
                             src={vipIcon}
-                            alt="VIP Star"
-                            className="w-full h-full object-contain drop-shadow-sm"
+                            alt="Intelligent Brain"
+                            className="w-full h-full object-contain drop-shadow-sm scale-110"
                         />
                     </div>
 
