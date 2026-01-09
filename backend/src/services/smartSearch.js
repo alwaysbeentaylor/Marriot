@@ -2340,10 +2340,32 @@ Return JSON:
         // STEP 5: Find Best LinkedIn Match
         // ============================================
         // FAST PATH: If we have a LinkedIn with exact name match in title, skip AI
+        // BUT: Also check location to avoid wrong-country matches
         const guestNameLower = guest.full_name.toLowerCase();
+        const guestCountryLower = (guest.country || '').toLowerCase();
+
+        // Location mismatch keywords - if snippet contains these but doesn't match guest country, reject
+        const wrongCountryIndicators = ['chicago', 'new york', 'los angeles', 'san francisco', 'boston', 'miami', 'seattle', 'denver', 'austin', 'dallas', 'houston', 'atlanta', 'phoenix', 'philadelphia', 'united states', 'usa', 'u.s.', 'america'];
+        const europeanCountries = ['netherlands', 'nederland', 'belgium', 'belgië', 'belgique', 'germany', 'deutschland', 'france', 'uk', 'united kingdom', 'spain', 'italy', 'portugal', 'austria', 'switzerland'];
+
         const perfectLinkedIn = platforms.linkedin.find(r => {
             const titleLower = (r.title || '').toLowerCase();
-            return titleLower.includes(guestNameLower) && r.link.includes('linkedin.com/in/');
+            const snippetLower = (r.snippet || '').toLowerCase();
+            const nameMatches = titleLower.includes(guestNameLower) && r.link.includes('linkedin.com/in/');
+
+            if (!nameMatches) return false;
+
+            // If guest has a European country, check for US location mismatch
+            const guestIsEuropean = europeanCountries.some(c => guestCountryLower.includes(c));
+            if (guestIsEuropean) {
+                const snippetHasUSLocation = wrongCountryIndicators.some(loc => snippetLower.includes(loc));
+                if (snippetHasUSLocation) {
+                    console.log(`⚠️ LinkedIn SKIPPED (US location in EU guest search): ${r.link} → "${snippetLower.substring(0, 100)}..."`);
+                    return false;
+                }
+            }
+
+            return true;
         });
 
         let aiResult = null;
@@ -2366,8 +2388,21 @@ Return JSON:
             const aiCandidates = allResults.filter(r => {
                 const link = r.link.toLowerCase();
                 const title = (r.title || '').toLowerCase();
+                const snippetLower = (r.snippet || '').toLowerCase();
                 const nameParts = guest.full_name.toLowerCase().split(' ');
                 const matchesName = nameParts.some(part => part.length > 3 && title.includes(part));
+
+                // Skip LinkedIn results with wrong country location
+                if (link.includes('linkedin.com/in') && guestCountryLower) {
+                    const guestIsEuropean = europeanCountries.some(c => guestCountryLower.includes(c));
+                    if (guestIsEuropean) {
+                        const snippetHasUSLocation = wrongCountryIndicators.some(loc => snippetLower.includes(loc));
+                        if (snippetHasUSLocation) {
+                            console.log(`⚠️ AI candidate SKIPPED (US location): ${link}`);
+                            return false;
+                        }
+                    }
+                }
 
                 return link.includes('linkedin.com/in') ||
                     link.includes('wikipedia.org') ||
