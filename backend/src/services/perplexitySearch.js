@@ -226,35 +226,41 @@ class PerplexitySearchService {
 
         console.log(`🔮 Sonar: Analyzing ${full_name}...`);
 
-        const prompt = `Je bent een VIP research assistent voor een luxe hotel. Zoek informatie over deze gast en geef een professionele analyse.
+        const prompt = `You are a professional hospitality assistant helping a luxury hotel prepare for a guest's arrival.
 
-GAST INFORMATIE:
-- Naam: ${full_name}
-- Land: ${country || 'Onbekend'}
-- Bedrijf (indien bekend): ${company || 'Onbekend'}
-- Email domein: ${email ? email.split('@')[1] : 'Onbekend'}
+GUEST NAME: ${full_name}
+COUNTRY: ${country || 'Unknown'}
+${company ? `COMPANY: ${company}` : ''}
 
-ZOEK en ANALYSEER deze persoon. Focus op:
-1. Is dit een BN'er/celebrity/publiek figuur? (acteur, atleet, politicus, TV-persoonlijkheid, etc.)
-2. Wat is zijn/haar huidige functie en bedrijf?
-3. LinkedIn profiel URL (indien gevonden)
-4. Instagram/Twitter (indien relevant en gevonden)
-5. Hoe belangrijk/VIP is deze gast voor een luxe hotel? (1-10 score)
+Search for PUBLICLY AVAILABLE professional information about this person. We want to provide personalized service.
 
-ANTWOORD ALLEEN IN DIT JSON FORMAT:
+IMPORTANT RULES:
+- ONLY return information if you find the EXACT person with this FULL NAME
+- If you cannot find this specific person, return null values
+- Do NOT guess or match partial names
+- Focus on PUBLIC professional profiles (LinkedIn, company websites, news articles)
+
+Find:
+1. Current job title and company
+2. LinkedIn profile URL (if available)
+3. Any public recognition or achievements
+4. Professional social media (if public figure)
+
+Return ONLY this JSON (no explanation):
 {
+  "found": true or false,
   "isCelebrity": boolean,
   "celebrityCategory": "entertainment|sports|business|politics|media|none",
-  "knownFor": "korte beschrijving waarvoor bekend (of null)",
-  "jobTitle": "huidige functie (of null)",
-  "company": "huidige bedrijf (of null)", 
-  "linkedinUrl": "volledige LinkedIn URL (of null)",
-  "instagramHandle": "instagram username zonder @ (of null)",
-  "twitterHandle": "twitter/X username zonder @ (of null)",
-  "location": "stad/regio waar persoon woont/werkt",
+  "knownFor": "what they're known for or null",
+  "jobTitle": "current role or null",
+  "company": "current company or null", 
+  "linkedinUrl": "full LinkedIn URL or null",
+  "instagramHandle": "username without @ or null",
+  "twitterHandle": "username without @ or null",
+  "location": "city/region",
   "vipScore": 1-10,
-  "vipReason": "korte uitleg waarom deze VIP score",
-  "notableInfo": "belangrijke info voor hotel personeel",
+  "vipReason": "brief explanation",
+  "notableInfo": "relevant info for hotel staff",
   "confidenceScore": 0.0-1.0,
   "sources": ["url1", "url2"]
 }`;
@@ -309,7 +315,13 @@ ANTWOORD ALLEEN IN DIT JSON FORMAT:
                 return null;
             }
 
-            console.log(`✅ Sonar analysis complete in ${duration}s - VIP Score: ${analysis.vipScore}`);
+            console.log(`✅ Sonar analysis complete in ${duration}s - VIP Score: ${analysis.vipScore || 'N/A'}`);
+
+            // If person not found, return null to trigger fallback
+            if (analysis.found === false || (!analysis.jobTitle && !analysis.company && !analysis.linkedinUrl)) {
+                console.log('⚠️ Sonar: Person not found with exact name match');
+                return null;
+            }
 
             // Return normalized result
             return {
