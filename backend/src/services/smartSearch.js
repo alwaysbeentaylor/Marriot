@@ -2071,6 +2071,30 @@ Return JSON:
                     websiteUrl: sonarResult.sources?.[0] || null,
                     notableInfo: sonarResult.notableInfo,
                     fullReport: {
+                        executive_summary: sonarResult.notableInfo || `${guest.full_name} is ${sonarResult.jobTitle ? sonarResult.jobTitle : 'een professional'} ${sonarResult.company ? 'bij ' + sonarResult.company : ''}.`,
+                        professional_background: {
+                            current_role: sonarResult.jobTitle || null,
+                            career_trajectory: sonarResult.knownFor || null,
+                            industry_expertise: sonarResult.celebrityCategory !== 'none' ? sonarResult.celebrityCategory : null,
+                            notable_achievements: sonarResult.vipReason || null
+                        },
+                        company_analysis: {
+                            company_name: sonarResult.company || null,
+                            company_description: null,
+                            company_position: null,
+                            employee_count: null
+                        },
+                        vip_indicators: {
+                            wealth_signals: sonarResult.vipScore >= 8 ? 'Significante indicaties van vermogen' : null,
+                            influence_factors: sonarResult.vipReason || null,
+                            status_markers: sonarResult.isCelebrity ? `Bekend als ${sonarResult.celebrityCategory}` : null
+                        },
+                        service_recommendations: {
+                            priority_level: sonarResult.vipScore >= 9 ? 'Ultra-VIP' : sonarResult.vipScore >= 7 ? 'VIP' : sonarResult.vipScore >= 5 ? 'Verhoogd' : 'Standaard',
+                            quick_win: sonarResult.company ? `Verwelkom bij naam en verwijs naar ${sonarResult.company}` : null,
+                            categories: []
+                        },
+                        additional_notes: sonarResult.sources?.length > 0 ? `Bronnen: ${sonarResult.sources.join(', ')}` : null,
                         vip_reason: sonarResult.vipReason,
                         sources: sonarResult.sources,
                         confidence: sonarResult.confidenceScore
