@@ -557,6 +557,17 @@ Return JSON:
                     console.log(`✅ Location verified: "${finalLocation}" matches guest country: "${guest.country}"`);
                 }
 
+                // CRITICAL: Verify the result contains the guest's LAST NAME
+                // This prevents matching "Karim" from KTD Legal to guest "Karim Cheuk-a-lam"
+                const guestNameParts = guest.full_name.toLowerCase().split(/\s+/).filter(p => p.length > 2);
+                const lastName = guestNameParts[guestNameParts.length - 1]; // Get last name
+                const resultText = (bestSource.title + ' ' + bestSource.snippet).toLowerCase();
+
+                if (lastName && lastName.length > 2 && !resultText.includes(lastName)) {
+                    console.log(`❌ Name mismatch! Guest last name "${lastName}" not found in result - REJECTING match`);
+                    return null;
+                }
+
                 console.log(`✨ Match found! ${bestSource.link} (Conf: ${result.confidence})`);
 
                 // Log what the AI extracted
@@ -2742,18 +2753,42 @@ Return JSON:
         const hasMeaningfulSocialMedia = hasTwitter ||
             (hasInstagram && (hasCelebrityInfo || hasHardResults));
 
+        // FOLLOWER THRESHOLD: For individuals (not celebrities), only show social if 5000+ followers
+        // This prevents showing random personal Instagram accounts for regular guests
+        const MIN_FOLLOWERS_FOR_INDIVIDUALS = 5000;
+
+        const instagramFollowers = instagramResult.followers || 0;
+        const twitterFollowers = twitterResult.followers || 0;
+
+        const hasSubstantialInstagram = hasCelebrityInfo || instagramFollowers >= MIN_FOLLOWERS_FOR_INDIVIDUALS;
+        const hasSubstantialTwitter = hasCelebrityInfo || twitterFollowers >= MIN_FOLLOWERS_FOR_INDIVIDUALS;
+
         // Determine if Instagram should be included in results
-        // Only include if: celebrity OR (Instagram AND other "hard" results exist)
-        // If ONLY Instagram is found (no LinkedIn, company, job title, etc.), exclude it
-        // NOTE: hasAnalysis is intentionally NOT included - AI always generates scores even without real data
-        const shouldIncludeInstagram = hasCelebrityInfo || (hasInstagram && hasHardResults);
+        // RULES:
+        // 1. Celebrity → Always include
+        // 2. Has LinkedIn + Other hard results → Include if 5000+ followers
+        // 3. No LinkedIn → Include if 5000+ followers (influencer-level)
+        // 4. Business person with LinkedIn → NO social media (LinkedIn is enough)
+        const shouldIncludeInstagram = hasCelebrityInfo ||
+            (hasInstagram && hasSubstantialInstagram && (hasHardResults || !hasLinkedIn));
+
+        const shouldIncludeTwitter = hasCelebrityInfo ||
+            (hasTwitter && hasSubstantialTwitter && (hasHardResults || !hasLinkedIn));
 
         // Debug logging
         if (hasInstagram) {
             if (shouldIncludeInstagram) {
-                console.log(`✅ Instagram included (celebrity=${hasCelebrityInfo}, linkedin=${hasLinkedIn}, company=${hasCompany}, jobTitle=${hasJobTitle}, twitter=${hasTwitter}, news=${hasNews})`);
+                console.log(`✅ Instagram included (celebrity=${hasCelebrityInfo}, followers=${instagramFollowers}, threshold=${MIN_FOLLOWERS_FOR_INDIVIDUALS})`);
             } else {
-                console.log(`🚫 Instagram found but EXCLUDED (not celebrity, no hard results - only Instagram + AI analysis found)`);
+                console.log(`🚫 Instagram EXCLUDED (not celebrity, followers=${instagramFollowers} < ${MIN_FOLLOWERS_FOR_INDIVIDUALS})`);
+            }
+        }
+
+        if (hasTwitter) {
+            if (shouldIncludeTwitter) {
+                console.log(`✅ Twitter included (celebrity=${hasCelebrityInfo}, followers=${twitterFollowers})`);
+            } else {
+                console.log(`🚫 Twitter EXCLUDED (not celebrity, followers=${twitterFollowers} < ${MIN_FOLLOWERS_FOR_INDIVIDUALS})`);
             }
         }
 
@@ -2800,13 +2835,13 @@ Return JSON:
             instagramBio: shouldIncludeInstagram ? instagramResult.bio : null,
             instagramLocation: shouldIncludeInstagram ? instagramResult.location : null,
 
-            // Twitter data
-            twitterUrl: twitterResult.url,
-            twitterHandle: twitterResult.handle,
-            twitterFollowers: twitterResult.followers,
-            twitterBio: twitterResult.bio || null,
-            twitterLocation: twitterResult.location || null,
-            twitterMemberSince: twitterResult.memberSince || null,
+            // Twitter data (only include if meaningful or celebrity)
+            twitterUrl: shouldIncludeTwitter ? twitterResult.url : null,
+            twitterHandle: shouldIncludeTwitter ? twitterResult.handle : null,
+            twitterFollowers: shouldIncludeTwitter ? twitterResult.followers : null,
+            twitterBio: shouldIncludeTwitter ? twitterResult.bio : null,
+            twitterLocation: shouldIncludeTwitter ? twitterResult.location : null,
+            twitterMemberSince: shouldIncludeTwitter ? twitterResult.memberSince : null,
 
             // Combined/derived data
             socialMediaLocation: socialMediaLocation,
