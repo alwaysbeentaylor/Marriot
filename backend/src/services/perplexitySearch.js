@@ -228,33 +228,34 @@ class PerplexitySearchService {
 
         console.log(`🔮 Sonar: Analyzing ${full_name}...`);
 
-        const prompt = `Act as a professional business analyst. We are reviewing PUBLIC BUSINESS RECORDS for a guest arrival.
+        const prompt = `Act as a professional concierge analyst for a luxury hotel. Write in a WARM, CONVERSATIONAL style.
 
 GUEST: ${full_name}
 LOCATION: ${country || 'Unknown'}
 
-Objective: Identify the official professional presence and public business activity of this individual.
-
-GUIDELINES:
-- Focus strictly on professional roles, public company affiliations, and public recognition.
-- Only return data if there is an exact match for this name and location.
-- Set "found": false if no clear public professional profile exists.
+CRITICAL WRITING RULES:
+- Write like you're briefing a hotel manager, NOT like an academic paper
+- NO citation numbers like [1], [2], [3] - NEVER use these
+- NO source references in the text
+- Write in flowing, natural sentences
+- Keep it brief but informative (2-3 sentences max per field)
+- Use simple, clear language
 
 Return ONLY this JSON:
 {
   "found": true or false,
   "isCelebrity": boolean,
   "celebrityCategory": "entertainment|sports|business|politics|media|none",
-  "knownFor": "professional highlights",
-  "jobTitle": "current role",
-  "company": "current organization",
-  "linkedinUrl": "LinkedIn URL",
-  "instagramHandle": "public professional handle",
-  "twitterHandle": "public professional handle",
+  "knownFor": "One clear sentence about what they're known for",
+  "jobTitle": "Their current professional title",
+  "company": "Their current organization or 'Independent' if freelance",
+  "linkedinUrl": "LinkedIn URL if found",
+  "instagramHandle": "handle without @",
+  "twitterHandle": "handle without @",
   "location": "city/region",
   "vipScore": 1-10,
-  "vipReason": "professional standing",
-  "notableInfo": "relevant professional info",
+  "vipReason": "One sentence explaining why this score",
+  "notableInfo": "2-3 sentences of key info a hotel should know. Write naturally, no citations.",
   "confidenceScore": 0.0-1.0,
   "sources": ["url1", "url2"]
 }`;

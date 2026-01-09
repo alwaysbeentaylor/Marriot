@@ -811,164 +811,148 @@ function GuestModal({ guest, onClose, onUpdate, onResearch, onDownloadPDF }) {
                                 );
 
                                 return (
-                                    <div className="space-y-4 mt-6">
-                                        {/* Executive Summary - Hero Card */}
+                                    <div className="space-y-3 mt-6">
+                                        {/* Executive Summary - Compact Hero */}
                                         {fullReport.executive_summary && (
-                                            <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 shadow-sm">
-                                                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-200/30 to-transparent rounded-full -mr-16 -mt-16"></div>
-                                                <div className="p-5 relative">
-                                                    <div className="flex items-center gap-2 mb-3">
-                                                        <span className="text-xl">📋</span>
-                                                        <h4 className="text-sm font-bold uppercase tracking-wider text-amber-800">Executive Summary</h4>
+                                            <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 p-4">
+                                                <div className="flex items-start gap-3">
+                                                    <span className="text-2xl">📋</span>
+                                                    <div className="flex-1">
+                                                        <h4 className="text-xs font-bold uppercase tracking-wider text-amber-800 mb-2">Samenvatting</h4>
+                                                        <p className="text-sm leading-relaxed text-gray-700">
+                                                            {/* Clean up citation marks from AI output */}
+                                                            {fullReport.executive_summary.replace(/\[\d+\]/g, '').replace(/\s+/g, ' ').trim()}
+                                                        </p>
                                                     </div>
-                                                    <p className="text-sm leading-relaxed text-gray-700">
-                                                        {fullReport.executive_summary}
-                                                    </p>
                                                 </div>
                                             </div>
                                         )}
 
-                                        {/* Two Column Grid for Main Info */}
-                                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                                            {/* Professional Background Card */}
-                                            {(fullReport.professional_background?.current_role || fullReport.professional_background?.career_trajectory || fullReport.professional_background?.industry_expertise || fullReport.professional_background?.notable_achievements) && (
-                                                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                                                    <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-3">
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="text-lg">👤</span>
-                                                            <h5 className="text-sm font-bold text-white uppercase tracking-wide">Professioneel Profiel</h5>
-                                                        </div>
-                                                    </div>
-                                                    <div className="p-4 space-y-3">
-                                                        {fullReport.professional_background?.current_role && (
-                                                            <div className="flex items-start gap-3">
-                                                                <span className="text-blue-500 mt-0.5">💼</span>
-                                                                <div>
-                                                                    <span className="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Huidige Rol</span>
-                                                                    <p className="text-sm font-medium text-gray-800">{fullReport.professional_background.current_role}</p>
-                                                                </div>
-                                                            </div>
-                                                        )}
-                                                        {fullReport.professional_background?.career_trajectory && (
-                                                            <div className="flex items-start gap-3">
-                                                                <span className="text-blue-500 mt-0.5">📈</span>
-                                                                <div>
-                                                                    <span className="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Carrière</span>
-                                                                    <p className="text-sm text-gray-700">{fullReport.professional_background.career_trajectory}</p>
-                                                                </div>
-                                                            </div>
-                                                        )}
-                                                        {fullReport.professional_background?.industry_expertise && (
-                                                            <div className="flex items-start gap-3">
-                                                                <span className="text-blue-500 mt-0.5">🎯</span>
-                                                                <div>
-                                                                    <span className="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Expertise</span>
-                                                                    <p className="text-sm text-gray-700">{fullReport.professional_background.industry_expertise}</p>
-                                                                </div>
-                                                            </div>
-                                                        )}
-                                                        {fullReport.professional_background?.notable_achievements && (
-                                                            <div className="flex items-start gap-3">
-                                                                <span className="text-blue-500 mt-0.5">🏆</span>
-                                                                <div>
-                                                                    <span className="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Prestaties</span>
-                                                                    <p className="text-sm text-gray-700">{fullReport.professional_background.notable_achievements}</p>
-                                                                </div>
-                                                            </div>
-                                                        )}
-                                                    </div>
+                                        {/* Quick Stats Row */}
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                            {fullReport.professional_background?.current_role && (
+                                                <div className="bg-blue-50 rounded-lg p-3 border border-blue-100">
+                                                    <span className="text-[10px] uppercase font-bold text-blue-600 block mb-1">Rol</span>
+                                                    <p className="text-sm font-medium text-gray-800 line-clamp-2">{fullReport.professional_background.current_role}</p>
                                                 </div>
                                             )}
-
-                                            {/* Company Analysis Card */}
-                                            {(fullReport.company_analysis?.company_name || fullReport.company_analysis?.company_description || fullReport.company_analysis?.company_position) && (
-                                                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                                                    <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 py-3">
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="text-lg">🏢</span>
-                                                            <h5 className="text-sm font-bold text-white uppercase tracking-wide">Bedrijfsanalyse</h5>
-                                                        </div>
-                                                    </div>
-                                                    <div className="p-4 space-y-3">
-                                                        {fullReport.company_analysis?.company_name && (
-                                                            <div className="flex items-start gap-3">
-                                                                <span className="text-emerald-500 mt-0.5">🏷️</span>
-                                                                <div>
-                                                                    <span className="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Bedrijf</span>
-                                                                    <p className="text-sm font-medium text-gray-800">{fullReport.company_analysis.company_name}</p>
-                                                                </div>
-                                                            </div>
-                                                        )}
-                                                        {fullReport.company_analysis?.company_description && (
-                                                            <div className="flex items-start gap-3">
-                                                                <span className="text-emerald-500 mt-0.5">📝</span>
-                                                                <div>
-                                                                    <span className="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Beschrijving</span>
-                                                                    <p className="text-sm text-gray-700">{fullReport.company_analysis.company_description}</p>
-                                                                </div>
-                                                            </div>
-                                                        )}
-                                                        {fullReport.company_analysis?.company_position && (
-                                                            <div className="flex items-start gap-3">
-                                                                <span className="text-emerald-500 mt-0.5">📊</span>
-                                                                <div>
-                                                                    <span className="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Marktpositie</span>
-                                                                    <p className="text-sm text-gray-700">{fullReport.company_analysis.company_position}</p>
-                                                                </div>
-                                                            </div>
-                                                        )}
-                                                        {fullReport.company_analysis?.employee_count && (
-                                                            <div className="flex items-start gap-3">
-                                                                <span className="text-emerald-500 mt-0.5">👥</span>
-                                                                <div>
-                                                                    <span className="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Medewerkers</span>
-                                                                    <p className="text-sm text-gray-700">{fullReport.company_analysis.employee_count}</p>
-                                                                </div>
-                                                            </div>
-                                                        )}
-                                                    </div>
+                                            {fullReport.company_analysis?.company_name && (
+                                                <div className="bg-emerald-50 rounded-lg p-3 border border-emerald-100">
+                                                    <span className="text-[10px] uppercase font-bold text-emerald-600 block mb-1">Bedrijf</span>
+                                                    <p className="text-sm font-medium text-gray-800 line-clamp-2">{fullReport.company_analysis.company_name}</p>
+                                                </div>
+                                            )}
+                                            {fullReport.professional_background?.industry_expertise && (
+                                                <div className="bg-purple-50 rounded-lg p-3 border border-purple-100">
+                                                    <span className="text-[10px] uppercase font-bold text-purple-600 block mb-1">Sector</span>
+                                                    <p className="text-sm font-medium text-gray-800 line-clamp-2">{fullReport.professional_background.industry_expertise}</p>
+                                                </div>
+                                            )}
+                                            {research.vip_score && (
+                                                <div className="bg-amber-50 rounded-lg p-3 border border-amber-100">
+                                                    <span className="text-[10px] uppercase font-bold text-amber-600 block mb-1">VIP Score</span>
+                                                    <p className="text-xl font-bold text-amber-700">{research.vip_score}/10</p>
                                                 </div>
                                             )}
                                         </div>
 
-                                        {/* VIP Indicators - Highlight Card */}
-                                        {(fullReport.vip_indicators?.wealth_signals || fullReport.vip_indicators?.influence_factors || fullReport.vip_indicators?.status_markers) && (
-                                            <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200 p-4">
-                                                <div className="flex items-center gap-2 mb-3">
-                                                    <span className="text-xl">⭐</span>
-                                                    <h5 className="text-sm font-bold uppercase tracking-wide text-purple-800">VIP Indicatoren</h5>
-                                                </div>
-                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                                    {fullReport.vip_indicators?.wealth_signals && (
-                                                        <div className="bg-white/70 rounded-lg p-3 border border-purple-100">
-                                                            <div className="flex items-center gap-2 mb-1">
-                                                                <span className="text-sm">💰</span>
-                                                                <span className="text-[10px] uppercase font-bold text-purple-600">Vermogen</span>
-                                                            </div>
-                                                            <p className="text-xs text-gray-700">{fullReport.vip_indicators.wealth_signals}</p>
+                                        {/* Collapsible Detail Sections */}
+                                        <div className="space-y-2">
+                                            {/* Professional Details - Collapsible */}
+                                            {(fullReport.professional_background?.career_trajectory || fullReport.professional_background?.notable_achievements) && (
+                                                <details className="group bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                                                    <summary className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors list-none">
+                                                        <div className="flex items-center gap-3">
+                                                            <span className="text-lg">👤</span>
+                                                            <span className="text-sm font-semibold text-gray-800">Professionele Details</span>
                                                         </div>
-                                                    )}
-                                                    {fullReport.vip_indicators?.influence_factors && (
-                                                        <div className="bg-white/70 rounded-lg p-3 border border-purple-100">
-                                                            <div className="flex items-center gap-2 mb-1">
-                                                                <span className="text-sm">🌟</span>
-                                                                <span className="text-[10px] uppercase font-bold text-purple-600">Invloed</span>
+                                                        <span className="transform group-open:rotate-180 transition-transform text-gray-400">▼</span>
+                                                    </summary>
+                                                    <div className="px-4 pb-4 pt-0 border-t border-gray-100 space-y-3">
+                                                        {fullReport.professional_background?.career_trajectory && (
+                                                            <div>
+                                                                <span className="text-[10px] uppercase font-bold text-gray-500 block mb-1">📈 Carrière</span>
+                                                                <p className="text-sm text-gray-700">{fullReport.professional_background.career_trajectory.replace(/\[\d+\]/g, '')}</p>
                                                             </div>
-                                                            <p className="text-xs text-gray-700">{fullReport.vip_indicators.influence_factors}</p>
-                                                        </div>
-                                                    )}
-                                                    {fullReport.vip_indicators?.status_markers && (
-                                                        <div className="bg-white/70 rounded-lg p-3 border border-purple-100">
-                                                            <div className="flex items-center gap-2 mb-1">
-                                                                <span className="text-sm">👑</span>
-                                                                <span className="text-[10px] uppercase font-bold text-purple-600">Status</span>
+                                                        )}
+                                                        {fullReport.professional_background?.notable_achievements && (
+                                                            <div>
+                                                                <span className="text-[10px] uppercase font-bold text-gray-500 block mb-1">🏆 Prestaties</span>
+                                                                <p className="text-sm text-gray-700">{fullReport.professional_background.notable_achievements.replace(/\[\d+\]/g, '')}</p>
                                                             </div>
-                                                            <p className="text-xs text-gray-700">{fullReport.vip_indicators.status_markers}</p>
+                                                        )}
+                                                    </div>
+                                                </details>
+                                            )}
+
+                                            {/* Company Details - Collapsible */}
+                                            {(fullReport.company_analysis?.company_description || fullReport.company_analysis?.company_position || fullReport.company_analysis?.employee_count) && (
+                                                <details className="group bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                                                    <summary className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors list-none">
+                                                        <div className="flex items-center gap-3">
+                                                            <span className="text-lg">🏢</span>
+                                                            <span className="text-sm font-semibold text-gray-800">Bedrijfsdetails</span>
                                                         </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        )}
+                                                        <span className="transform group-open:rotate-180 transition-transform text-gray-400">▼</span>
+                                                    </summary>
+                                                    <div className="px-4 pb-4 pt-0 border-t border-gray-100 space-y-3">
+                                                        {fullReport.company_analysis?.company_description && (
+                                                            <div>
+                                                                <span className="text-[10px] uppercase font-bold text-gray-500 block mb-1">📝 Beschrijving</span>
+                                                                <p className="text-sm text-gray-700">{fullReport.company_analysis.company_description}</p>
+                                                            </div>
+                                                        )}
+                                                        {fullReport.company_analysis?.company_position && (
+                                                            <div>
+                                                                <span className="text-[10px] uppercase font-bold text-gray-500 block mb-1">📊 Marktpositie</span>
+                                                                <p className="text-sm text-gray-700">{fullReport.company_analysis.company_position}</p>
+                                                            </div>
+                                                        )}
+                                                        {fullReport.company_analysis?.employee_count && (
+                                                            <div>
+                                                                <span className="text-[10px] uppercase font-bold text-gray-500 block mb-1">👥 Medewerkers</span>
+                                                                <p className="text-sm text-gray-700">{fullReport.company_analysis.employee_count}</p>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </details>
+                                            )}
+
+                                            {/* VIP Indicators - Collapsible */}
+                                            {(fullReport.vip_indicators?.wealth_signals || fullReport.vip_indicators?.influence_factors || fullReport.vip_indicators?.status_markers) && (
+                                                <details className="group bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200 overflow-hidden">
+                                                    <summary className="flex items-center justify-between p-4 cursor-pointer hover:bg-purple-100/50 transition-colors list-none">
+                                                        <div className="flex items-center gap-3">
+                                                            <span className="text-lg">⭐</span>
+                                                            <span className="text-sm font-semibold text-purple-800">VIP Indicatoren</span>
+                                                        </div>
+                                                        <span className="transform group-open:rotate-180 transition-transform text-purple-400">▼</span>
+                                                    </summary>
+                                                    <div className="px-4 pb-4 pt-0 border-t border-purple-200">
+                                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-3">
+                                                            {fullReport.vip_indicators?.wealth_signals && (
+                                                                <div className="bg-white/70 rounded-lg p-3 border border-purple-100">
+                                                                    <span className="text-[10px] uppercase font-bold text-purple-600 block mb-1">💰 Vermogen</span>
+                                                                    <p className="text-xs text-gray-700">{fullReport.vip_indicators.wealth_signals}</p>
+                                                                </div>
+                                                            )}
+                                                            {fullReport.vip_indicators?.influence_factors && (
+                                                                <div className="bg-white/70 rounded-lg p-3 border border-purple-100">
+                                                                    <span className="text-[10px] uppercase font-bold text-purple-600 block mb-1">🌟 Invloed</span>
+                                                                    <p className="text-xs text-gray-700">{fullReport.vip_indicators.influence_factors}</p>
+                                                                </div>
+                                                            )}
+                                                            {fullReport.vip_indicators?.status_markers && (
+                                                                <div className="bg-white/70 rounded-lg p-3 border border-purple-100">
+                                                                    <span className="text-[10px] uppercase font-bold text-purple-600 block mb-1">👑 Status</span>
+                                                                    <p className="text-xs text-gray-700">{fullReport.vip_indicators.status_markers}</p>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </details>
+                                            )}
+                                        </div>
 
                                         {/* Service Recommendations - Action Card */}
                                         {fullReport.service_recommendations && (
