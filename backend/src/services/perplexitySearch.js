@@ -256,18 +256,21 @@ class PerplexitySearchService {
             ? `\nEMAIL DOMAIN: ${emailDomain} (Company might be: ${companyFromEmail})\nIMPORTANT: Research this company/website and determine what they do.`
             : '';
 
+        const locationContext = country ? `\n\n⚠️ CRITICAL LOCATION FILTER:\n- The guest is from: ${country}\n- ONLY return results for people connected to ${country} (live there, work there, or are from there)\n- If you find someone with the same name but in a DIFFERENT country (e.g., USA, UK, Australia), set "found": false\n- Do NOT confuse people with similar names from other countries` : '';
+
         const prompt = `Act as a professional concierge analyst for a luxury hotel. Write in a WARM, CONVERSATIONAL style.
 
 GUEST: ${full_name}
-LOCATION: ${country || 'Unknown'}${emailContext}
+LOCATION: ${country || 'Unknown'}${emailContext}${locationContext}
 
-CRITICAL WRITING RULES:
-- Write like you're briefing a hotel manager, NOT like an academic paper
-- NO citation numbers like [1], [2], [3] - NEVER use these
-- NO source references in the text
-- Write in flowing, natural sentences
-- Keep it brief but informative (2-3 sentences max per field)
-- Use simple, clear language
+CRITICAL RULES:
+1. LOCATION MATCH IS MANDATORY - if the person you find is not from/in ${country || 'the specified location'}, return "found": false
+2. Write like you're briefing a hotel manager, NOT like an academic paper
+3. NO citation numbers like [1], [2], [3] - NEVER use these
+4. NO source references in the text
+5. Write in flowing, natural sentences
+6. Keep it brief but informative (2-3 sentences max per field)
+7. Use simple, clear language
 
 ${emailDomain ? `COMPANY RESEARCH REQUIRED:
 - Look up the website ${emailDomain} and determine what type of business it is
@@ -277,6 +280,8 @@ ${emailDomain ? `COMPANY RESEARCH REQUIRED:
 Return ONLY this JSON:
 {
   "found": true or false,
+  "locationMatch": true or false,
+  "foundLocation": "Where this person is actually from/based",
   "isCelebrity": boolean,
   "celebrityCategory": "entertainment|sports|business|politics|media|none",
   "knownFor": "One clear sentence about what they're known for",
@@ -353,11 +358,17 @@ Return ONLY this JSON:
                 return null;
             }
 
-            console.log(`✅ Sonar analysis complete in ${duration}s - VIP Score: ${analysis.vipScore || 'N/A'}`);
+            console.log(`✅ Sonar analysis complete in ${duration}s - VIP Score: ${analysis.vipScore || 'N/A'} - Location Match: ${analysis.locationMatch}`);
 
-            // If person not found, return null to trigger fallback
+            // If person not found OR location doesn't match, return null to trigger fallback
             if (analysis.found === false || (!analysis.jobTitle && !analysis.company && !analysis.linkedinUrl)) {
                 console.log('⚠️ Sonar: Person not found with exact name match');
+                return null;
+            }
+
+            // Check location match - if we found someone in wrong country, reject
+            if (analysis.locationMatch === false && analysis.foundLocation) {
+                console.log(`⚠️ Sonar: Found person but WRONG LOCATION - Expected: ${country}, Found: ${analysis.foundLocation}`);
                 return null;
             }
 
