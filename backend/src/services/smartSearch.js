@@ -23,6 +23,14 @@ const IGNORED_EMAIL_DOMAINS = [
     'airbnb.com', 'vrbo.com', 'tripadvisor.com', 'kayak.com', 'priceline.com',
     'travelocity.com', 'orbitz.com', 'hotwire.com', 'lastminute.com',
     'momondo.com', 'skyscanner.com', 'cheaptickets.com',
+    // Airlines & Transport (guests booked travel, don't work there)
+    'transavia.com', 'klm.com', 'klm.nl', 'airfrance.com', 'airfrance.fr',
+    'lufthansa.com', 'britishairways.com', 'easyjet.com', 'ryanair.com',
+    'vueling.com', 'iberia.com', 'emirates.com', 'qatar.com', 'etihad.com',
+    'united.com', 'delta.com', 'aa.com', 'americanairlines.com',
+    'southwest.com', 'jetblue.com', 'spirit.com', 'frontier.com',
+    'thalys.com', 'eurostar.com', 'ns.nl', 'sncf.com', 'bahn.de', 'tgv.com',
+    'flixbus.com', 'blablacar.com', 'uber.com', 'lyft.com',
     // Generic/Test
     'example.com', 'test.com', 'email.com', 'temp-mail.org'
 ];
@@ -2080,18 +2088,22 @@ Return JSON:
                         },
                         company_analysis: {
                             company_name: sonarResult.company || null,
-                            company_description: null,
+                            company_type: sonarResult.companyType || null,
+                            company_description: sonarResult.companyDescription || null,
+                            ownership_likelihood: sonarResult.ownershipLikelihood || null,
                             company_position: null,
                             employee_count: null
                         },
                         vip_indicators: {
-                            wealth_signals: sonarResult.vipScore >= 8 ? 'Significante indicaties van vermogen' : null,
+                            wealth_signals: sonarResult.ownershipLikelihood === 'high' ? 'Waarschijnlijk eigenaar/beslisser' : (sonarResult.vipScore >= 8 ? 'Significante indicaties van vermogen' : null),
                             influence_factors: sonarResult.vipReason || null,
-                            status_markers: sonarResult.isCelebrity ? `Bekend als ${sonarResult.celebrityCategory}` : null
+                            status_markers: sonarResult.isCelebrity ? `Bekend als ${sonarResult.celebrityCategory}` : (sonarResult.ownershipLikelihood === 'high' ? 'Besluitvormer / Eigenaar' : null)
                         },
                         service_recommendations: {
                             priority_level: sonarResult.vipScore >= 9 ? 'Ultra-VIP' : sonarResult.vipScore >= 7 ? 'VIP' : sonarResult.vipScore >= 5 ? 'Verhoogd' : 'Standaard',
-                            quick_win: sonarResult.company ? `Verwelkom bij naam en verwijs naar ${sonarResult.company}` : null,
+                            quick_win: sonarResult.ownershipLikelihood === 'high' && sonarResult.company
+                                ? `Als ondernemer van ${sonarResult.company} - vraag naar hun bedrijf en ervaringen`
+                                : (sonarResult.company ? `Verwelkom bij naam en toon interesse in ${sonarResult.company}` : null),
                             categories: []
                         },
                         additional_notes: sonarResult.sources?.length > 0 ? `Bronnen: ${sonarResult.sources.join(', ')}` : null,

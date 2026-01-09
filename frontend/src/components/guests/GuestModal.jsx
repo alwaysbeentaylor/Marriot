@@ -886,20 +886,39 @@ function GuestModal({ guest, onClose, onUpdate, onResearch, onDownloadPDF }) {
                                             )}
 
                                             {/* Company Details - Collapsible */}
-                                            {(fullReport.company_analysis?.company_description || fullReport.company_analysis?.company_position || fullReport.company_analysis?.employee_count) && (
+                                            {(fullReport.company_analysis?.company_type || fullReport.company_analysis?.company_description || fullReport.company_analysis?.ownership_likelihood || fullReport.company_analysis?.company_position || fullReport.company_analysis?.employee_count) && (
                                                 <details className="group bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                                                     <summary className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors list-none">
                                                         <div className="flex items-center gap-3">
                                                             <span className="text-lg">🏢</span>
                                                             <span className="text-sm font-semibold text-gray-800">Bedrijfsdetails</span>
+                                                            {fullReport.company_analysis?.ownership_likelihood === 'high' && (
+                                                                <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold">Waarschijnlijk eigenaar</span>
+                                                            )}
                                                         </div>
                                                         <span className="transform group-open:rotate-180 transition-transform text-gray-400">▼</span>
                                                     </summary>
                                                     <div className="px-4 pb-4 pt-0 border-t border-gray-100 space-y-3">
+                                                        {fullReport.company_analysis?.company_type && (
+                                                            <div>
+                                                                <span className="text-[10px] uppercase font-bold text-gray-500 block mb-1">🏷️ Type Bedrijf</span>
+                                                                <p className="text-sm text-gray-700">{fullReport.company_analysis.company_type}</p>
+                                                            </div>
+                                                        )}
                                                         {fullReport.company_analysis?.company_description && (
                                                             <div>
-                                                                <span className="text-[10px] uppercase font-bold text-gray-500 block mb-1">📝 Beschrijving</span>
+                                                                <span className="text-[10px] uppercase font-bold text-gray-500 block mb-1">📝 Wat doen ze</span>
                                                                 <p className="text-sm text-gray-700">{fullReport.company_analysis.company_description}</p>
+                                                            </div>
+                                                        )}
+                                                        {fullReport.company_analysis?.ownership_likelihood && fullReport.company_analysis.ownership_likelihood !== 'unknown' && (
+                                                            <div>
+                                                                <span className="text-[10px] uppercase font-bold text-gray-500 block mb-1">👤 Rol Inschatting</span>
+                                                                <p className="text-sm text-gray-700">
+                                                                    {fullReport.company_analysis.ownership_likelihood === 'high' && '🟢 Waarschijnlijk eigenaar of besluitvormer'}
+                                                                    {fullReport.company_analysis.ownership_likelihood === 'medium' && '🟡 Mogelijk leidinggevende positie'}
+                                                                    {fullReport.company_analysis.ownership_likelihood === 'low' && '⚪ Waarschijnlijk medewerker'}
+                                                                </p>
                                                             </div>
                                                         )}
                                                         {fullReport.company_analysis?.company_position && (

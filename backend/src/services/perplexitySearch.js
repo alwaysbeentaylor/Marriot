@@ -228,10 +228,38 @@ class PerplexitySearchService {
 
         console.log(`🔮 Sonar: Analyzing ${full_name}...`);
 
+        // Extract email domain for company research (if valid)
+        let emailDomain = null;
+        let companyFromEmail = null;
+        const ignoredDomains = [
+            'gmail.com', 'hotmail.com', 'outlook.com', 'yahoo.com', 'icloud.com',
+            'booking.com', 'expedia.com', 'hotels.com', 'airbnb.com', 'agoda.com',
+            'transavia.com', 'klm.com', 'ryanair.com', 'easyjet.com', 'lufthansa.com',
+            'tripadvisor.com', 'kayak.com', 'trivago.com'
+        ];
+
+        if (email && email.includes('@')) {
+            const domain = email.split('@')[1]?.toLowerCase();
+            if (domain && !ignoredDomains.some(d => domain.includes(d.replace('.com', '')))) {
+                emailDomain = domain;
+                // Convert domain to company name guess (e.g., knowyourvip.com -> Know Your VIP)
+                companyFromEmail = domain.split('.')[0]
+                    .replace(/-/g, ' ')
+                    .replace(/([a-z])([A-Z])/g, '$1 $2')
+                    .split(' ')
+                    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+                    .join(' ');
+            }
+        }
+
+        const emailContext = emailDomain
+            ? `\nEMAIL DOMAIN: ${emailDomain} (Company might be: ${companyFromEmail})\nIMPORTANT: Research this company/website and determine what they do.`
+            : '';
+
         const prompt = `Act as a professional concierge analyst for a luxury hotel. Write in a WARM, CONVERSATIONAL style.
 
 GUEST: ${full_name}
-LOCATION: ${country || 'Unknown'}
+LOCATION: ${country || 'Unknown'}${emailContext}
 
 CRITICAL WRITING RULES:
 - Write like you're briefing a hotel manager, NOT like an academic paper
@@ -241,6 +269,11 @@ CRITICAL WRITING RULES:
 - Keep it brief but informative (2-3 sentences max per field)
 - Use simple, clear language
 
+${emailDomain ? `COMPANY RESEARCH REQUIRED:
+- Look up the website ${emailDomain} and determine what type of business it is
+- Assess if ${full_name} is likely the owner or an employee based on the email prefix and company size
+- If email starts with info@, contact@, or the person's name, they're more likely to be a decision-maker/owner` : ''}
+
 Return ONLY this JSON:
 {
   "found": true or false,
@@ -249,6 +282,9 @@ Return ONLY this JSON:
   "knownFor": "One clear sentence about what they're known for",
   "jobTitle": "Their current professional title",
   "company": "Their current organization or 'Independent' if freelance",
+  "companyType": "What type of business (e.g., 'SaaS startup', 'Luxury hotel', 'Marketing agency', 'Restaurant group')",
+  "companyDescription": "One sentence about what the company does",
+  "ownershipLikelihood": "high|medium|low|unknown - likelihood this person owns or leads the company",
   "linkedinUrl": "LinkedIn URL if found",
   "instagramHandle": "handle without @",
   "twitterHandle": "handle without @",
@@ -337,6 +373,11 @@ Return ONLY this JSON:
                 company: analysis.company || null,
                 linkedinUrl: analysis.linkedinUrl || null,
                 location: analysis.location || null,
+
+                // Company research (from email domain)
+                companyType: analysis.companyType || null,
+                companyDescription: analysis.companyDescription || null,
+                ownershipLikelihood: analysis.ownershipLikelihood || 'unknown',
 
                 // Social media
                 instagramHandle: analysis.instagramHandle || null,
