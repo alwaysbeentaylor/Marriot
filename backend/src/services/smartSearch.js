@@ -2163,23 +2163,28 @@ Return JSON:
 
         console.log(`📊 Discovery phase complete: ${allResults.length} unique results found (LinkedIn: ${linkedInFound ? '✓' : '✗'})`);
 
-        // AI Celebrity Detection on early results
-        const aiDetection = await this.detectCelebrityWithAI(guest, allResults);
-        // Require 0.9+ confidence AND a name match in results to skip LinkedIn search
-        if (aiDetection && aiDetection.isCelebrity && aiDetection.confidence >= 0.9) {
-            // Check if the primary name or aliases are actually present in our search results snippets
-            const primaryNameLower = aiDetection.primaryName?.toLowerCase();
-            const someResultsMatch = allResults.some(r =>
-                (r.title + ' ' + (r.snippet || '')).toLowerCase().includes(primaryNameLower) ||
-                (r.title + ' ' + (r.snippet || '')).toLowerCase().includes(guest.full_name.toLowerCase())
-            );
+        // AI Celebrity Detection - ONLY if no LinkedIn found
+        // LinkedIn always takes priority over celebrity assumptions
+        if (!linkedInFound) {
+            const aiDetection = await this.detectCelebrityWithAI(guest, allResults);
+            // Require 0.9+ confidence AND a name match in results to activate celebrity mode
+            if (aiDetection && aiDetection.isCelebrity && aiDetection.confidence >= 0.9) {
+                // Check if the primary name or aliases are actually present in our search results snippets
+                const primaryNameLower = aiDetection.primaryName?.toLowerCase();
+                const someResultsMatch = allResults.some(r =>
+                    (r.title + ' ' + (r.snippet || '')).toLowerCase().includes(primaryNameLower) ||
+                    (r.title + ' ' + (r.snippet || '')).toLowerCase().includes(guest.full_name.toLowerCase())
+                );
 
-            if (someResultsMatch) {
-                celebrityInfo = aiDetection;
-                console.log(`🌟 Confirmed Public Figure FOUND in results. Skipping deep person-search to avoid namesake mismatches.`);
-            } else {
-                console.log(`⚠️ AI thinks it's a celebrity (${aiDetection.primaryName}), but no matching results found. Continuing deep search.`);
+                if (someResultsMatch) {
+                    celebrityInfo = aiDetection;
+                    console.log(`🌟 Confirmed Public Figure FOUND in results. Skipping deep person-search to avoid namesake mismatches.`);
+                } else {
+                    console.log(`⚠️ AI thinks it's a celebrity (${aiDetection.primaryName}), but no matching results found. Continuing deep search.`);
+                }
             }
+        } else {
+            console.log(`📋 LinkedIn found - skipping celebrity detection (LinkedIn takes priority)`);
         }
 
         // ============================================
