@@ -38,7 +38,7 @@ function WelcomeModal({ forceOpen = false, onClose }) {
                 <div
                     className="relative p-10 text-center overflow-hidden"
                     style={{
-                        background: 'linear-gradient(135deg, #c9a227 0%, #f4d03f 25%, #c9a227 50%, #f4d03f 75%, #c9a227 100%)',
+                        background: 'linear-gradient(135deg, #e3c766 0%, #f7e6a1 25%, #e3c766 50%, #f7e6a1 75%, #e3c766 100%)',
                         backgroundSize: '200% 200%',
                         animation: 'shimmer 3s ease-in-out infinite'
                     }}
@@ -59,6 +59,7 @@ function WelcomeModal({ forceOpen = false, onClose }) {
                             src={vipIcon}
                             alt="Intelligent Brain"
                             className="w-full h-full object-contain drop-shadow-sm scale-110"
+                            style={{ mixBlendMode: 'multiply' }}
                         />
                     </div>
 
@@ -66,7 +67,7 @@ function WelcomeModal({ forceOpen = false, onClose }) {
                         className="text-3xl font-bold text-white drop-shadow-lg"
                         style={{
                             fontFamily: "'Playfair Display', serif",
-                            textShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                            textShadow: '0 2px 4px rgba(0,0,0,0.1)'
                         }}
                     >
                         Know Your VIP
@@ -84,8 +85,8 @@ function WelcomeModal({ forceOpen = false, onClose }) {
                             <div
                                 className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-white shadow-lg"
                                 style={{
-                                    background: 'linear-gradient(135deg, #c9a227, #f4d03f)',
-                                    boxShadow: '0 4px 14px rgba(201, 162, 39, 0.4)'
+                                    background: 'linear-gradient(135deg, #dac05e, #f2dc87)',
+                                    boxShadow: '0 4px 14px rgba(218, 192, 94, 0.4)'
                                 }}
                             >
                                 1
@@ -101,8 +102,8 @@ function WelcomeModal({ forceOpen = false, onClose }) {
                             <div
                                 className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-white shadow-lg"
                                 style={{
-                                    background: 'linear-gradient(135deg, #c9a227, #f4d03f)',
-                                    boxShadow: '0 4px 14px rgba(201, 162, 39, 0.4)'
+                                    background: 'linear-gradient(135deg, #dac05e, #f2dc87)',
+                                    boxShadow: '0 4px 14px rgba(218, 192, 94, 0.4)'
                                 }}
                             >
                                 2
@@ -118,8 +119,8 @@ function WelcomeModal({ forceOpen = false, onClose }) {
                             <div
                                 className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-white shadow-lg"
                                 style={{
-                                    background: 'linear-gradient(135deg, #c9a227, #f4d03f)',
-                                    boxShadow: '0 4px 14px rgba(201, 162, 39, 0.4)'
+                                    background: 'linear-gradient(135deg, #dac05e, #f2dc87)',
+                                    boxShadow: '0 4px 14px rgba(218, 192, 94, 0.4)'
                                 }}
                             >
                                 3
@@ -136,8 +137,8 @@ function WelcomeModal({ forceOpen = false, onClose }) {
                         onClick={handleClose}
                         className="w-full mt-8 py-4 rounded-xl font-semibold text-white transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
                         style={{
-                            background: 'linear-gradient(135deg, #c9a227, #f4d03f)',
-                            boxShadow: '0 6px 20px rgba(201, 162, 39, 0.4)'
+                            background: 'linear-gradient(135deg, #e3c766, #f7e6a1)',
+                            boxShadow: '0 6px 20px rgba(218, 192, 94, 0.4)'
                         }}
                     >
                         Aan de slag ✨
