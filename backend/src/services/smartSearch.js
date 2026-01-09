@@ -2592,61 +2592,76 @@ Return JSON:
         }
         // --------------------------
 
-        // --- Company Research (FAST MODE) ---
-        // 1x Google search, AI extracts info from snippets, NO website scraping
+        // --- Company & Final Analysis (PARALLEL) ---
+        // We start company lookup and AI analysis at the same time to save 10-15s
         let companyInfo = null;
+        let analysis = null;
+
         const targetCompany = guest.company || (linkedinInfo.bestMatch && linkedinInfo.bestMatch.company);
 
-        if (targetCompany) {
-            // SKIP company search for confirmed celebrities (AI will deduce "company" like 'RTL' or 'Universal' from context)
-            if (celebrityInfo.isCelebrity) {
-                console.log(`⚡ fast-mode: Skipping dedicated company search for celebrity (AI will infer context)`);
-            } else {
-                // SKIP company search for invalid/personal domain companies (Hotmail, Gmail, Expedia, etc.)
-                const isInvalidCompany = ['hotmail', 'gmail', 'yahoo', 'outlook', 'live', 'icloud', 'aol', 'protonmail',
-                    'expedia', 'booking', 'hotels', 'agoda', 'trivago', 'airbnb', 'tripadvisor', 'kayak', 'priceline']
-                    .some(p => targetCompany?.toLowerCase().includes(p));
+        console.log(`🚀 Starting Final Analysis & Company Lookup in parallel...`);
+        const parallelPromises = [];
 
-                if (isInvalidCompany) {
-                    console.log(`📋 Skipping company lookup for invalid domain: ${targetCompany}`);
-                } else {
-                    // SPEED: Skip company search for well-known large companies (we already know what they are)
-                    const wellKnownCompanies = [
-                        'essent', 'kpn', 'ing bank', 'rabobank', 'abn amro', 'philips', 'shell', 'unilever',
-                        'heineken', 'akzonobel', 'asml', 'booking.com', 'adyen', 'wolters kluwer', 'randstad',
-                        'proximus', 'belfius', 'bnp paribas', 'kbc bank', 'telenet', 'orange', 'vodafone',
-                        'deloitte', 'pwc', 'kpmg', 'ernst & young', 'mckinsey', 'boston consulting', 'accenture', 'capgemini',
-                        'microsoft', 'google', 'amazon', 'apple', 'meta platforms', 'ibm', 'oracle', 'sap',
-                        'albert heijn', 'jumbo supermarkten', 'lidl', 'aldi', 'ikea', 'mediamarkt', 'coolblue',
-                        'ns', 'prorail', 'schiphol', 'klm', 'transavia', 'brussels airlines', 'lufthansa'
-                    ];
-                    // EXACT match check (company name must equal or start with the known company)
-                    const companyLower = targetCompany?.toLowerCase().trim();
-                    const isWellKnown = wellKnownCompanies.some(c =>
-                        companyLower === c || companyLower.startsWith(c + ' ') || companyLower.startsWith(c + ',')
-                    );
+        // 1. Final AI Analysis (Primary) - We always run this
+        const analysisPromiseIdx = parallelPromises.length;
+        parallelPromises.push(this.analyzeWithAI(guest, linkedinInfo, celebrityInfo, newsInfo, fallbackMatch, allResults, emailDomainInfo));
 
-                    if (isWellKnown) {
-                        console.log(`⚡ Skipping company lookup for well-known company: ${targetCompany}`);
-                    } else {
-                        console.log(`🏢 Quick company lookup: ${targetCompany}`);
-                        companyInfo = await companyScraper.searchCompany(targetCompany, {
-                            guestCountry: guest.country,
-                            guestCity: guest.city || null
-                        });
-                    }
-                }
-            }
-            // SKIP website scraping - AI already extracted info from snippets
+        // 2. Company Research (Optional)
+        let companyLookupIdx = -1;
+
+        const isInvalidCompany = ['hotmail', 'gmail', 'yahoo', 'outlook', 'live', 'icloud', 'aol', 'protonmail',
+            'expedia', 'booking', 'hotels', 'agoda', 'trivago', 'airbnb', 'tripadvisor', 'kayak', 'priceline']
+            .some(p => targetCompany?.toLowerCase().includes(p));
+
+        const wellKnownCompanies = [
+            'essent', 'kpn', 'ing bank', 'rabobank', 'abn amro', 'philips', 'shell', 'unilever',
+            'heineken', 'akzonobel', 'asml', 'booking.com', 'adyen', 'wolters kluwer', 'randstad',
+            'proximus', 'belfius', 'bnp paribas', 'kbc bank', 'telenet', 'orange', 'vodafone',
+            'deloitte', 'pwc', 'kpmg', 'ernst & young', 'mckinsey', 'boston consulting', 'accenture', 'capgemini',
+            'microsoft', 'google', 'amazon', 'apple', 'meta platforms', 'ibm', 'oracle', 'sap',
+            'albert heijn', 'jumbo supermarkten', 'lidl', 'aldi', 'ikea', 'mediamarkt', 'coolblue',
+            'ns', 'prorail', 'schiphol', 'klm', 'transavia', 'brussels airlines', 'lufthansa'
+        ];
+        const companyLower = targetCompany?.toLowerCase().trim();
+        const isWellKnown = wellKnownCompanies.some(c =>
+            companyLower === c || companyLower.startsWith(c + ' ') || companyLower.startsWith(c + ',')
+        );
+
+        if (targetCompany && !celebrityInfo.isCelebrity && !isInvalidCompany && !isWellKnown) {
+            console.log(`🏢 Parallel: Starting company lookup for ${targetCompany}`);
+            companyLookupIdx = parallelPromises.length;
+            parallelPromises.push(companyScraper.searchCompany(targetCompany, {
+                guestCountry: guest.country,
+                guestCity: guest.city || null
+            }));
+        } else if (targetCompany) {
+            console.log(`⚡ Parallel: Skipping company lookup (known/celebrity/invalid)`);
         }
-        guest.company_info = companyInfo;
-        // -----------------------------
 
-        // Analyze with AI (include celebrity info and news for better context)
-        // STEP 5: FINAL ANALYSIS
-        // ============================================
-        const analysis = await this.analyzeWithAI(guest, linkedinInfo, celebrityInfo, newsInfo, fallbackMatch, allResults, emailDomainInfo);
-        console.log(`🤖 AI Analysis: VIP Score ${analysis.vip_score}`);
+        // Wait for both to complete
+        const finalResults = await Promise.allSettled(parallelPromises);
+
+        // Extract Analysis Result
+        const analysisRes = finalResults[analysisPromiseIdx];
+        if (analysisRes.status === 'fulfilled') {
+            analysis = analysisRes.value;
+            console.log(`🤖 AI Analysis: VIP Score ${analysis.vip_score}`);
+        } else {
+            console.error('❌ Final AI Analysis failed:', analysisRes.reason);
+            // Minimal fallback analysis
+            analysis = { vip_score: 5, industry: { value: 'Onbekend' }, full_report: {} };
+        }
+
+        // Extract Company Result
+        if (companyLookupIdx !== -1) {
+            const companyRes = finalResults[companyLookupIdx];
+            if (companyRes.status === 'fulfilled') {
+                companyInfo = companyRes.value;
+                guest.company_info = companyInfo;
+                console.log(`🏢 Parallel: Company lookup complete`);
+            }
+        }
+        // -----------------------------
 
         // Get best LinkedIn data
         const bestMatch = linkedinInfo.bestMatch;
