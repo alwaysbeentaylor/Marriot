@@ -811,143 +811,248 @@ function GuestModal({ guest, onClose, onUpdate, onResearch, onDownloadPDF }) {
                                 );
 
                                 return (
-                                    <div className="space-y-6 mt-6">
-                                        {/* Executive Summary */}
-                                        <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border-l-4 border-[var(--color-accent-gold)]">
-                                            <span className="text-xs text-[var(--color-text-secondary)] uppercase tracking-wide block mb-2 font-semibold">
-                                                Executive Summary
-                                            </span>
-                                            <p className="text-sm leading-relaxed text-[var(--color-text-primary)]">
-                                                {fullReport.executive_summary}
-                                            </p>
-                                        </div>
-
-                                        {/* Grid for Professional & Company */}
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <div className="space-y-3">
-                                                <h5 className="text-xs font-semibold uppercase tracking-wider text-[var(--color-accent-gold)]">
-                                                    Professionele Achtergrond
-                                                </h5>
-                                                <div className="text-sm space-y-2">
-                                                    {fullReport.professional_background?.current_role && (
-                                                        <p><strong>Huidige rol:</strong> {fullReport.professional_background.current_role}</p>
-                                                    )}
-                                                    {fullReport.professional_background?.career_trajectory && (
-                                                        <p><strong>Carrière:</strong> {fullReport.professional_background.career_trajectory}</p>
-                                                    )}
-                                                    {fullReport.professional_background?.industry_expertise && (
-                                                        <p><strong>Expertise:</strong> {fullReport.professional_background.industry_expertise}</p>
-                                                    )}
-                                                    {fullReport.professional_background?.notable_achievements && (
-                                                        <p><strong>Prestaties:</strong> {fullReport.professional_background.notable_achievements}</p>
-                                                    )}
+                                    <div className="space-y-4 mt-6">
+                                        {/* Executive Summary - Hero Card */}
+                                        {fullReport.executive_summary && (
+                                            <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 shadow-sm">
+                                                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-200/30 to-transparent rounded-full -mr-16 -mt-16"></div>
+                                                <div className="p-5 relative">
+                                                    <div className="flex items-center gap-2 mb-3">
+                                                        <span className="text-xl">📋</span>
+                                                        <h4 className="text-sm font-bold uppercase tracking-wider text-amber-800">Executive Summary</h4>
+                                                    </div>
+                                                    <p className="text-sm leading-relaxed text-gray-700">
+                                                        {fullReport.executive_summary}
+                                                    </p>
                                                 </div>
                                             </div>
+                                        )}
 
-                                            <div className="space-y-3">
-                                                <h5 className="text-xs font-semibold uppercase tracking-wider text-[var(--color-accent-gold)]">
-                                                    Bedrijfsanalyse
-                                                </h5>
-                                                <div className="text-sm space-y-2">
-                                                    {fullReport.company_analysis?.company_name && (
-                                                        <p><strong>Bedrijf:</strong> {fullReport.company_analysis.company_name}</p>
-                                                    )}
-                                                    {fullReport.company_analysis?.company_description && (
-                                                        <p><strong>Beschrijving:</strong> {fullReport.company_analysis.company_description}</p>
-                                                    )}
-                                                    {fullReport.company_analysis?.company_position && (
-                                                        <p><strong>Marktpositie:</strong> {fullReport.company_analysis.company_position}</p>
-                                                    )}
-                                                    {fullReport.company_analysis?.employee_count && (
-                                                        <p><strong>Medewerkers:</strong> {fullReport.company_analysis.employee_count}</p>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* VIP & Service Recommendations */}
-                                        <div className="bg-[var(--color-bg-secondary)] p-4 rounded-lg space-y-4">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                {(fullReport.vip_indicators?.wealth_signals || fullReport.vip_indicators?.influence_factors || fullReport.vip_indicators?.status_markers) && (
-                                                    <div>
-                                                        <h5 className="text-xs font-semibold uppercase tracking-wider text-[var(--color-accent-gold)] mb-2">
-                                                            VIP Indicatoren
-                                                        </h5>
-                                                        <ul className="text-sm list-disc list-inside space-y-1 text-[var(--color-text-secondary)]">
-                                                            {fullReport.vip_indicators?.wealth_signals && (
-                                                                <li>{fullReport.vip_indicators.wealth_signals}</li>
-                                                            )}
-                                                            {fullReport.vip_indicators?.influence_factors && (
-                                                                <li>{fullReport.vip_indicators.influence_factors}</li>
-                                                            )}
-                                                            {fullReport.vip_indicators?.status_markers && (
-                                                                <li>{fullReport.vip_indicators.status_markers}</li>
-                                                            )}
-                                                        </ul>
+                                        {/* Two Column Grid for Main Info */}
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                            {/* Professional Background Card */}
+                                            {(fullReport.professional_background?.current_role || fullReport.professional_background?.career_trajectory || fullReport.professional_background?.industry_expertise || fullReport.professional_background?.notable_achievements) && (
+                                                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                                                    <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-3">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-lg">👤</span>
+                                                            <h5 className="text-sm font-bold text-white uppercase tracking-wide">Professioneel Profiel</h5>
+                                                        </div>
                                                     </div>
-                                                )}
-                                                <div className="flex-1">
-                                                    <div className="flex items-center justify-between mb-3">
-                                                        <h5 className="text-xs font-semibold uppercase tracking-wider text-[var(--color-accent-gold)]">
-                                                            Service Aanbevelingen
-                                                        </h5>
-                                                        <span className="badge bg-gold-lite text-[var(--color-accent-gold)] px-2 py-0.5 rounded text-[10px] font-bold">
-                                                            {fullReport.service_recommendations?.priority_level}
-                                                        </span>
-                                                    </div>
-
-                                                    {fullReport.service_recommendations?.quick_win && (
-                                                        <div className="mb-4 p-3 bg-white border border-[var(--color-accent-gold)] border-opacity-30 rounded-lg shadow-sm">
-                                                            <div className="flex items-center gap-2 mb-1">
-                                                                <span className="text-sm">⚡</span>
-                                                                <span className="text-[10px] font-bold uppercase text-[var(--color-accent-gold)]">Quick Win</span>
+                                                    <div className="p-4 space-y-3">
+                                                        {fullReport.professional_background?.current_role && (
+                                                            <div className="flex items-start gap-3">
+                                                                <span className="text-blue-500 mt-0.5">💼</span>
+                                                                <div>
+                                                                    <span className="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Huidige Rol</span>
+                                                                    <p className="text-sm font-medium text-gray-800">{fullReport.professional_background.current_role}</p>
+                                                                </div>
                                                             </div>
-                                                            <p className="text-sm font-medium text-[var(--color-text-primary)]">
+                                                        )}
+                                                        {fullReport.professional_background?.career_trajectory && (
+                                                            <div className="flex items-start gap-3">
+                                                                <span className="text-blue-500 mt-0.5">📈</span>
+                                                                <div>
+                                                                    <span className="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Carrière</span>
+                                                                    <p className="text-sm text-gray-700">{fullReport.professional_background.career_trajectory}</p>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                        {fullReport.professional_background?.industry_expertise && (
+                                                            <div className="flex items-start gap-3">
+                                                                <span className="text-blue-500 mt-0.5">🎯</span>
+                                                                <div>
+                                                                    <span className="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Expertise</span>
+                                                                    <p className="text-sm text-gray-700">{fullReport.professional_background.industry_expertise}</p>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                        {fullReport.professional_background?.notable_achievements && (
+                                                            <div className="flex items-start gap-3">
+                                                                <span className="text-blue-500 mt-0.5">🏆</span>
+                                                                <div>
+                                                                    <span className="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Prestaties</span>
+                                                                    <p className="text-sm text-gray-700">{fullReport.professional_background.notable_achievements}</p>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Company Analysis Card */}
+                                            {(fullReport.company_analysis?.company_name || fullReport.company_analysis?.company_description || fullReport.company_analysis?.company_position) && (
+                                                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                                                    <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 py-3">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-lg">🏢</span>
+                                                            <h5 className="text-sm font-bold text-white uppercase tracking-wide">Bedrijfsanalyse</h5>
+                                                        </div>
+                                                    </div>
+                                                    <div className="p-4 space-y-3">
+                                                        {fullReport.company_analysis?.company_name && (
+                                                            <div className="flex items-start gap-3">
+                                                                <span className="text-emerald-500 mt-0.5">🏷️</span>
+                                                                <div>
+                                                                    <span className="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Bedrijf</span>
+                                                                    <p className="text-sm font-medium text-gray-800">{fullReport.company_analysis.company_name}</p>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                        {fullReport.company_analysis?.company_description && (
+                                                            <div className="flex items-start gap-3">
+                                                                <span className="text-emerald-500 mt-0.5">📝</span>
+                                                                <div>
+                                                                    <span className="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Beschrijving</span>
+                                                                    <p className="text-sm text-gray-700">{fullReport.company_analysis.company_description}</p>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                        {fullReport.company_analysis?.company_position && (
+                                                            <div className="flex items-start gap-3">
+                                                                <span className="text-emerald-500 mt-0.5">📊</span>
+                                                                <div>
+                                                                    <span className="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Marktpositie</span>
+                                                                    <p className="text-sm text-gray-700">{fullReport.company_analysis.company_position}</p>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                        {fullReport.company_analysis?.employee_count && (
+                                                            <div className="flex items-start gap-3">
+                                                                <span className="text-emerald-500 mt-0.5">👥</span>
+                                                                <div>
+                                                                    <span className="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Medewerkers</span>
+                                                                    <p className="text-sm text-gray-700">{fullReport.company_analysis.employee_count}</p>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* VIP Indicators - Highlight Card */}
+                                        {(fullReport.vip_indicators?.wealth_signals || fullReport.vip_indicators?.influence_factors || fullReport.vip_indicators?.status_markers) && (
+                                            <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200 p-4">
+                                                <div className="flex items-center gap-2 mb-3">
+                                                    <span className="text-xl">⭐</span>
+                                                    <h5 className="text-sm font-bold uppercase tracking-wide text-purple-800">VIP Indicatoren</h5>
+                                                </div>
+                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                                    {fullReport.vip_indicators?.wealth_signals && (
+                                                        <div className="bg-white/70 rounded-lg p-3 border border-purple-100">
+                                                            <div className="flex items-center gap-2 mb-1">
+                                                                <span className="text-sm">💰</span>
+                                                                <span className="text-[10px] uppercase font-bold text-purple-600">Vermogen</span>
+                                                            </div>
+                                                            <p className="text-xs text-gray-700">{fullReport.vip_indicators.wealth_signals}</p>
+                                                        </div>
+                                                    )}
+                                                    {fullReport.vip_indicators?.influence_factors && (
+                                                        <div className="bg-white/70 rounded-lg p-3 border border-purple-100">
+                                                            <div className="flex items-center gap-2 mb-1">
+                                                                <span className="text-sm">🌟</span>
+                                                                <span className="text-[10px] uppercase font-bold text-purple-600">Invloed</span>
+                                                            </div>
+                                                            <p className="text-xs text-gray-700">{fullReport.vip_indicators.influence_factors}</p>
+                                                        </div>
+                                                    )}
+                                                    {fullReport.vip_indicators?.status_markers && (
+                                                        <div className="bg-white/70 rounded-lg p-3 border border-purple-100">
+                                                            <div className="flex items-center gap-2 mb-1">
+                                                                <span className="text-sm">👑</span>
+                                                                <span className="text-[10px] uppercase font-bold text-purple-600">Status</span>
+                                                            </div>
+                                                            <p className="text-xs text-gray-700">{fullReport.vip_indicators.status_markers}</p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Service Recommendations - Action Card */}
+                                        {fullReport.service_recommendations && (
+                                            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                                                <div className="bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-3">
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-lg">🎯</span>
+                                                            <h5 className="text-sm font-bold text-white uppercase tracking-wide">Service Aanbevelingen</h5>
+                                                        </div>
+                                                        {fullReport.service_recommendations?.priority_level && (
+                                                            <span className="bg-white/20 text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase">
+                                                                {fullReport.service_recommendations.priority_level}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <div className="p-4 space-y-4">
+                                                    {/* Quick Win - Highlighted */}
+                                                    {fullReport.service_recommendations?.quick_win && (
+                                                        <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-lg p-4 border-l-4 border-amber-400">
+                                                            <div className="flex items-center gap-2 mb-2">
+                                                                <span className="text-lg">⚡</span>
+                                                                <span className="text-xs font-bold uppercase text-amber-700">Quick Win</span>
+                                                            </div>
+                                                            <p className="text-sm font-medium text-gray-800">
                                                                 {fullReport.service_recommendations.quick_win}
                                                             </p>
                                                         </div>
                                                     )}
 
-                                                    <div className="space-y-2">
-                                                        {fullReport.service_recommendations?.categories ? (
-                                                            fullReport.service_recommendations.categories.map((cat, idx) => (
-                                                                <details key={idx} className="group border border-[var(--color-border)] rounded-lg overflow-hidden bg-white transition-all">
-                                                                    <summary className="flex items-center justify-between p-3 cursor-pointer hover:bg-[var(--color-bg-secondary)] transition-colors list-none">
-                                                                        <span className="text-sm font-semibold text-[var(--color-text-primary)]">
-                                                                            {cat.title}
-                                                                        </span>
-                                                                        <span className="transform group-open:rotate-180 transition-transform text-xs opacity-50">
-                                                                            ▼
-                                                                        </span>
+                                                    {/* Service Categories */}
+                                                    {fullReport.service_recommendations?.categories?.length > 0 && (
+                                                        <div className="space-y-2">
+                                                            {fullReport.service_recommendations.categories.map((cat, idx) => (
+                                                                <details key={idx} className="group border border-gray-200 rounded-lg overflow-hidden bg-gray-50 transition-all hover:border-amber-300">
+                                                                    <summary className="flex items-center justify-between p-3 cursor-pointer hover:bg-gray-100 transition-colors list-none">
+                                                                        <div className="flex items-center gap-2">
+                                                                            <span className="text-sm">{idx === 0 ? '💬' : idx === 1 ? '📰' : '🎁'}</span>
+                                                                            <span className="text-sm font-semibold text-gray-800">{cat.title}</span>
+                                                                        </div>
+                                                                        <span className="transform group-open:rotate-180 transition-transform text-xs text-gray-400">▼</span>
                                                                     </summary>
-                                                                    <div className="p-3 pt-0 animate-in slide-in-from-top-1 duration-200">
-                                                                        <ul className="text-xs space-y-2 list-disc list-inside text-[var(--color-text-secondary)]">
+                                                                    <div className="p-3 pt-0 bg-white border-t border-gray-100">
+                                                                        <ul className="space-y-2">
                                                                             {cat.items?.map((item, i) => (
-                                                                                <li key={i} className="leading-relaxed">
-                                                                                    {item}
+                                                                                <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                                                                                    <span className="text-amber-500 mt-0.5">•</span>
+                                                                                    <span>{item}</span>
                                                                                 </li>
                                                                             ))}
                                                                         </ul>
                                                                     </div>
                                                                 </details>
-                                                            ))
-                                                        ) : (
-                                                            <div className="text-sm space-y-2 text-[var(--color-text-secondary)]">
-                                                                {fullReport.service_recommendations?.special_attention && (
-                                                                    <p><strong>Focus:</strong> {fullReport.service_recommendations.special_attention}</p>
-                                                                )}
-                                                                {fullReport.service_recommendations?.communication_style && (
-                                                                    <p><strong>Stijl:</strong> {fullReport.service_recommendations.communication_style}</p>
-                                                                )}
-                                                                {fullReport.service_recommendations?.gift_suggestions && (
-                                                                    <p><strong>Cadeau tip:</strong> {fullReport.service_recommendations.gift_suggestions}</p>
-                                                                )}
-                                                            </div>
-                                                        )}
-                                                    </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+
+                                                    {/* Fallback for old format */}
+                                                    {!fullReport.service_recommendations?.categories && (fullReport.service_recommendations?.special_attention || fullReport.service_recommendations?.communication_style || fullReport.service_recommendations?.gift_suggestions) && (
+                                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                                            {fullReport.service_recommendations?.special_attention && (
+                                                                <div className="bg-gray-50 rounded-lg p-3">
+                                                                    <span className="text-[10px] uppercase font-bold text-gray-500">Focus</span>
+                                                                    <p className="text-sm text-gray-700 mt-1">{fullReport.service_recommendations.special_attention}</p>
+                                                                </div>
+                                                            )}
+                                                            {fullReport.service_recommendations?.communication_style && (
+                                                                <div className="bg-gray-50 rounded-lg p-3">
+                                                                    <span className="text-[10px] uppercase font-bold text-gray-500">Communicatie</span>
+                                                                    <p className="text-sm text-gray-700 mt-1">{fullReport.service_recommendations.communication_style}</p>
+                                                                </div>
+                                                            )}
+                                                            {fullReport.service_recommendations?.gift_suggestions && (
+                                                                <div className="bg-gray-50 rounded-lg p-3">
+                                                                    <span className="text-[10px] uppercase font-bold text-gray-500">Cadeau Tip</span>
+                                                                    <p className="text-sm text-gray-700 mt-1">{fullReport.service_recommendations.gift_suggestions}</p>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
-                                        </div>
+                                        )}
 
                                         {fullReport.additional_notes && (
                                             <div className="text-xs italic text-[var(--color-text-secondary)]">
