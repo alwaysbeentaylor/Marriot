@@ -2352,14 +2352,14 @@ Return JSON:
         let twitterResult = { url: null, handle: null, followers: null };
         let newsInfo = { articles: [], results: [] };
 
-        // Deep scrape if it's a fallback match (not LinkedIn)
-        // SKIP deep scrape for celebrities - snippets are usually sufficient and it saves 30+ seconds
-        if (fallbackMatch && fallbackMatch.url && !fallbackMatch.url.includes('linkedin.com') && !celebrityInfo.isCelebrity) {
-            const deepContent = await googleSearch.fetchPageContent(fallbackMatch.url, 8000);
-            if (deepContent) {
-                fallbackMatch.deepContent = deepContent;
-            }
-        }
+        // SPEED: Deep scraping DISABLED - wastes 15+ seconds and usually times out anyway
+        // The AI already has enough context from search snippets
+        // if (fallbackMatch && fallbackMatch.url && !fallbackMatch.url.includes('linkedin.com') && !celebrityInfo.isCelebrity) {
+        //     const deepContent = await googleSearch.fetchPageContent(fallbackMatch.url, 8000);
+        //     if (deepContent) {
+        //         fallbackMatch.deepContent = deepContent;
+        //     }
+        // }
 
         // ============================================
         // STEP 3: Email Domain Analysis (skip if already done in searchGuest)
