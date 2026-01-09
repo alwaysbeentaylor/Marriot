@@ -829,11 +829,17 @@ function GuestModal({ guest, onClose, onUpdate, onResearch, onDownloadPDF }) {
                                                     Professionele Achtergrond
                                                 </h5>
                                                 <div className="text-sm space-y-2">
-                                                    <p><strong>Huidige rol:</strong> {fullReport.professional_background?.current_role}</p>
-                                                    <p><strong>Carrière:</strong> {fullReport.professional_background?.career_trajectory}</p>
-                                                    <p><strong>Expertise:</strong> {fullReport.professional_background?.industry_expertise}</p>
+                                                    {fullReport.professional_background?.current_role && (
+                                                        <p><strong>Huidige rol:</strong> {fullReport.professional_background.current_role}</p>
+                                                    )}
+                                                    {fullReport.professional_background?.career_trajectory && (
+                                                        <p><strong>Carrière:</strong> {fullReport.professional_background.career_trajectory}</p>
+                                                    )}
+                                                    {fullReport.professional_background?.industry_expertise && (
+                                                        <p><strong>Expertise:</strong> {fullReport.professional_background.industry_expertise}</p>
+                                                    )}
                                                     {fullReport.professional_background?.notable_achievements && (
-                                                        <p><strong>Prestaties:</strong> {fullReport.professional_background?.notable_achievements}</p>
+                                                        <p><strong>Prestaties:</strong> {fullReport.professional_background.notable_achievements}</p>
                                                     )}
                                                 </div>
                                             </div>
@@ -843,11 +849,17 @@ function GuestModal({ guest, onClose, onUpdate, onResearch, onDownloadPDF }) {
                                                     Bedrijfsanalyse
                                                 </h5>
                                                 <div className="text-sm space-y-2">
-                                                    <p><strong>Bedrijf:</strong> {fullReport.company_analysis?.company_name}</p>
-                                                    <p><strong>Beschrijving:</strong> {fullReport.company_analysis?.company_description}</p>
-                                                    <p><strong>Marktpositie:</strong> {fullReport.company_analysis?.company_position}</p>
+                                                    {fullReport.company_analysis?.company_name && (
+                                                        <p><strong>Bedrijf:</strong> {fullReport.company_analysis.company_name}</p>
+                                                    )}
+                                                    {fullReport.company_analysis?.company_description && (
+                                                        <p><strong>Beschrijving:</strong> {fullReport.company_analysis.company_description}</p>
+                                                    )}
+                                                    {fullReport.company_analysis?.company_position && (
+                                                        <p><strong>Marktpositie:</strong> {fullReport.company_analysis.company_position}</p>
+                                                    )}
                                                     {fullReport.company_analysis?.employee_count && (
-                                                        <p><strong>Medewerkers:</strong> {fullReport.company_analysis?.employee_count}</p>
+                                                        <p><strong>Medewerkers:</strong> {fullReport.company_analysis.employee_count}</p>
                                                     )}
                                                 </div>
                                             </div>
@@ -856,16 +868,24 @@ function GuestModal({ guest, onClose, onUpdate, onResearch, onDownloadPDF }) {
                                         {/* VIP & Service Recommendations */}
                                         <div className="bg-[var(--color-bg-secondary)] p-4 rounded-lg space-y-4">
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                <div>
-                                                    <h5 className="text-xs font-semibold uppercase tracking-wider text-[var(--color-accent-gold)] mb-2">
-                                                        VIP Indicatoren
-                                                    </h5>
-                                                    <ul className="text-sm list-disc list-inside space-y-1 text-[var(--color-text-secondary)]">
-                                                        <li>{fullReport.vip_indicators?.wealth_signals}</li>
-                                                        <li>{fullReport.vip_indicators?.influence_factors}</li>
-                                                        <li>{fullReport.vip_indicators?.status_markers}</li>
-                                                    </ul>
-                                                </div>
+                                                {(fullReport.vip_indicators?.wealth_signals || fullReport.vip_indicators?.influence_factors || fullReport.vip_indicators?.status_markers) && (
+                                                    <div>
+                                                        <h5 className="text-xs font-semibold uppercase tracking-wider text-[var(--color-accent-gold)] mb-2">
+                                                            VIP Indicatoren
+                                                        </h5>
+                                                        <ul className="text-sm list-disc list-inside space-y-1 text-[var(--color-text-secondary)]">
+                                                            {fullReport.vip_indicators?.wealth_signals && (
+                                                                <li>{fullReport.vip_indicators.wealth_signals}</li>
+                                                            )}
+                                                            {fullReport.vip_indicators?.influence_factors && (
+                                                                <li>{fullReport.vip_indicators.influence_factors}</li>
+                                                            )}
+                                                            {fullReport.vip_indicators?.status_markers && (
+                                                                <li>{fullReport.vip_indicators.status_markers}</li>
+                                                            )}
+                                                        </ul>
+                                                    </div>
+                                                )}
                                                 <div className="flex-1">
                                                     <div className="flex items-center justify-between mb-3">
                                                         <h5 className="text-xs font-semibold uppercase tracking-wider text-[var(--color-accent-gold)]">
