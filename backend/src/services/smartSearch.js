@@ -1991,21 +1991,89 @@ Return JSON:
         const startTime = Date.now();
 
         // ============================================
-        // STEP 0.5: Celebrity Detection (AI will detect public figures early)
+        // SONAR MODE: Try to do everything in 1 API call
+        // ============================================
+        if (perplexitySearch.isAvailable()) {
+            perplexitySearch.initialize();
+
+            console.log('🔮 Using Sonar (all-in-one search + analysis)...');
+            const sonarResult = await perplexitySearch.analyzeWithSonar(guest);
+
+            if (sonarResult) {
+                const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+                console.log(`🏁 SONAR complete in ${duration}s - VIP Score: ${sonarResult.vipScore}`);
+
+                // Return Sonar result in our standard format
+                return {
+                    profilePhotoUrl: null,
+                    jobTitle: sonarResult.jobTitle,
+                    companyName: sonarResult.company,
+                    companySize: null,
+                    isOwner: false,
+                    ownerReason: null,
+                    companyOwnershipLabel: null,
+                    companyOwnershipConfidence: null,
+                    companyOwnershipReason: null,
+                    companyOwnershipDetermination: null,
+                    employmentType: null,
+                    industry: sonarResult.celebrityCategory !== 'none' ? sonarResult.celebrityCategory : null,
+                    linkedinUrl: sonarResult.linkedinUrl,
+                    linkedinConnections: null,
+                    linkedinCandidates: [],
+                    needsLinkedInReview: false,
+                    instagramUrl: sonarResult.instagramUrl,
+                    instagramHandle: sonarResult.instagramHandle,
+                    instagramFollowers: null,
+                    instagramBio: null,
+                    instagramLocation: null,
+                    twitterUrl: sonarResult.twitterUrl,
+                    twitterHandle: sonarResult.twitterHandle,
+                    twitterFollowers: null,
+                    twitterBio: null,
+                    twitterLocation: null,
+                    twitterMemberSince: null,
+                    socialMediaLocation: sonarResult.location,
+                    effectiveCountry: guest.country || sonarResult.location,
+                    facebookUrl: null,
+                    youtubeUrl: null,
+                    websiteUrl: sonarResult.sources?.[0] || null,
+                    notableInfo: sonarResult.notableInfo,
+                    fullReport: {
+                        vip_reason: sonarResult.vipReason,
+                        sources: sonarResult.sources,
+                        confidence: sonarResult.confidenceScore
+                    },
+                    pressMentions: null,
+                    netWorthEstimate: null,
+                    followersEstimate: null,
+                    vipScore: sonarResult.vipScore,
+                    influenceLevel: sonarResult.vipScore >= 8 ? 'high' : sonarResult.vipScore >= 5 ? 'medium' : 'low',
+                    isCelebrity: sonarResult.isCelebrity,
+                    celebrityCategory: sonarResult.celebrityCategory,
+                    rawResults: [{ type: 'sonar_analysis', data: sonarResult }],
+                    emailDomainInfo: null,
+                    newsArticles: [],
+                    confidenceScores: { overall: sonarResult.confidenceScore },
+                    noResultsFound: !sonarResult.jobTitle && !sonarResult.company && !sonarResult.linkedinUrl
+                };
+            }
+
+            console.log('⚠️ Sonar failed, falling back to traditional flow...');
+        }
+
+        // ============================================
+        // FALLBACK: Traditional multi-step flow (if Sonar unavailable/fails)
         // ============================================
         let celebrityInfo = { isCelebrity: false, confidence: 0, category: null, knownFor: null };
-
         let linkedinInfo = { candidates: [], bestMatch: null, needsReview: false };
         let fallbackMatch = null;
 
-        // ============================================
-        // STEP 0: Email Domain Analysis FIRST (to get company if not known)
-        // ============================================
+        // Email Domain Analysis
         let emailDomainInfo = null;
         let effectiveCompany = guest.company;
 
         if (guest.email && !guest.company) {
-            console.log('📧 Step 0: Analyzing email domain to find company...');
+            console.log('📧 Analyzing email domain...');
             emailDomainInfo = await this.extractCompanyFromEmail(guest);
             if (emailDomainInfo && emailDomainInfo.companyName) {
                 effectiveCompany = emailDomainInfo.companyName;
@@ -2023,17 +2091,14 @@ Return JSON:
         let linkedInFound = false;
         let googleFailed = false;
 
-        // ============================================
-        // STEP 1: FAST SEARCH with Perplexity (Primary) or Google (Fallback)
-        // ============================================
-        console.log(`🔍 Step 1: Searching for ${guest.full_name}...`);
+        // Traditional search flow
+        console.log(`🔍 Traditional search for ${guest.full_name}...`);
 
         let searchResults = null;
         let searchSource = 'none';
 
-        // TRY PERPLEXITY FIRST (faster, more reliable)
+        // Try Perplexity Search first
         if (perplexitySearch.isAvailable()) {
-            perplexitySearch.initialize();
             searchResults = await perplexitySearch.searchPerson(guest);
             if (searchResults && searchResults.results.length > 0) {
                 searchSource = 'perplexity';

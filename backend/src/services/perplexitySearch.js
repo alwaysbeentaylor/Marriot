@@ -206,6 +206,146 @@ class PerplexitySearchService {
             domainFilter: ['linkedin.com']
         });
     }
+
+    /**
+     * SONAR - All-in-one search + analysis
+     * Searches the web AND analyzes results in a single API call
+     * Replaces: Search + Celebrity Detection + AI Matching + VIP Analysis
+     * 
+     * @param {Object} guest - Guest object with full_name, country, company, email
+     * @returns {Promise<Object>} Complete analysis including VIP score, job, company, etc.
+     */
+    async analyzeWithSonar(guest) {
+        if (!this.apiKey) {
+            console.warn('⚠️ Perplexity API key not configured');
+            return null;
+        }
+
+        const startTime = Date.now();
+        const { full_name, country, company, email } = guest;
+
+        console.log(`🔮 Sonar: Analyzing ${full_name}...`);
+
+        const prompt = `Je bent een VIP research assistent voor een luxe hotel. Zoek informatie over deze gast en geef een professionele analyse.
+
+GAST INFORMATIE:
+- Naam: ${full_name}
+- Land: ${country || 'Onbekend'}
+- Bedrijf (indien bekend): ${company || 'Onbekend'}
+- Email domein: ${email ? email.split('@')[1] : 'Onbekend'}
+
+ZOEK en ANALYSEER deze persoon. Focus op:
+1. Is dit een BN'er/celebrity/publiek figuur? (acteur, atleet, politicus, TV-persoonlijkheid, etc.)
+2. Wat is zijn/haar huidige functie en bedrijf?
+3. LinkedIn profiel URL (indien gevonden)
+4. Instagram/Twitter (indien relevant en gevonden)
+5. Hoe belangrijk/VIP is deze gast voor een luxe hotel? (1-10 score)
+
+ANTWOORD ALLEEN IN DIT JSON FORMAT:
+{
+  "isCelebrity": boolean,
+  "celebrityCategory": "entertainment|sports|business|politics|media|none",
+  "knownFor": "korte beschrijving waarvoor bekend (of null)",
+  "jobTitle": "huidige functie (of null)",
+  "company": "huidige bedrijf (of null)", 
+  "linkedinUrl": "volledige LinkedIn URL (of null)",
+  "instagramHandle": "instagram username zonder @ (of null)",
+  "twitterHandle": "twitter/X username zonder @ (of null)",
+  "location": "stad/regio waar persoon woont/werkt",
+  "vipScore": 1-10,
+  "vipReason": "korte uitleg waarom deze VIP score",
+  "notableInfo": "belangrijke info voor hotel personeel",
+  "confidenceScore": 0.0-1.0,
+  "sources": ["url1", "url2"]
+}`;
+
+        try {
+            const response = await fetch('https://api.perplexity.ai/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${this.apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: 'sonar',  // Use sonar for cost efficiency, sonar-pro for better quality
+                    messages: [
+                        { role: 'user', content: prompt }
+                    ],
+                    temperature: 0.1,  // Low temperature for consistent structured output
+                    max_tokens: 1000
+                })
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error(`❌ Sonar API error ${response.status}: ${errorText}`);
+                return null;
+            }
+
+            const data = await response.json();
+            const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+
+            // Extract the content from the response
+            const content = data.choices?.[0]?.message?.content;
+            if (!content) {
+                console.error('❌ Sonar returned empty content');
+                return null;
+            }
+
+            // Parse JSON from response (handle markdown code blocks)
+            let analysis;
+            try {
+                // Remove markdown code blocks if present
+                let jsonStr = content;
+                if (jsonStr.includes('```json')) {
+                    jsonStr = jsonStr.split('```json')[1].split('```')[0];
+                } else if (jsonStr.includes('```')) {
+                    jsonStr = jsonStr.split('```')[1].split('```')[0];
+                }
+                analysis = JSON.parse(jsonStr.trim());
+            } catch (parseError) {
+                console.error('❌ Failed to parse Sonar JSON:', parseError.message);
+                console.log('Raw content:', content.substring(0, 500));
+                return null;
+            }
+
+            console.log(`✅ Sonar analysis complete in ${duration}s - VIP Score: ${analysis.vipScore}`);
+
+            // Return normalized result
+            return {
+                // Celebrity info
+                isCelebrity: analysis.isCelebrity || false,
+                celebrityCategory: analysis.celebrityCategory || 'none',
+                knownFor: analysis.knownFor || null,
+
+                // Professional info
+                jobTitle: analysis.jobTitle || null,
+                company: analysis.company || null,
+                linkedinUrl: analysis.linkedinUrl || null,
+                location: analysis.location || null,
+
+                // Social media
+                instagramHandle: analysis.instagramHandle || null,
+                instagramUrl: analysis.instagramHandle ? `https://instagram.com/${analysis.instagramHandle}` : null,
+                twitterHandle: analysis.twitterHandle || null,
+                twitterUrl: analysis.twitterHandle ? `https://x.com/${analysis.twitterHandle}` : null,
+
+                // VIP analysis
+                vipScore: analysis.vipScore || 5,
+                vipReason: analysis.vipReason || null,
+                notableInfo: analysis.notableInfo || null,
+
+                // Meta
+                confidenceScore: analysis.confidenceScore || 0.5,
+                sources: analysis.sources || [],
+                duration: parseFloat(duration),
+                model: 'sonar'
+            };
+        } catch (error) {
+            console.error('❌ Sonar analysis error:', error.message);
+            return null;
+        }
+    }
 }
 
 module.exports = new PerplexitySearchService();
