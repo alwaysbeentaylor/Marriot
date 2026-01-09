@@ -58,8 +58,11 @@ function WelcomeModal({ forceOpen = false, onClose }) {
                         <img
                             src={vipIcon}
                             alt="Intelligent Brain"
-                            className="w-full h-full object-contain drop-shadow-sm scale-110"
-                            style={{ mixBlendMode: 'multiply' }}
+                            className="w-full h-full object-contain drop-shadow-sm scale-125"
+                            style={{
+                                maskImage: 'radial-gradient(circle, black 60%, transparent 70%)',
+                                WebkitMaskImage: 'radial-gradient(circle, black 60%, transparent 70%)'
+                            }}
                         />
                     </div>
 
