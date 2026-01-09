@@ -2121,62 +2121,64 @@ Return JSON:
         const allResults = [];
         const seenUrls = new Set();
         let linkedInFound = false;
-        let googleFailed = false;
 
-        // Traditional search flow
-        console.log(`🔍 Traditional search for ${guest.full_name}...`);
+        // --- STEP 1: PARALLEL DISCOVERY ---
+        // Run Perplexity Search AND an initial Google probe Query simultaneously
+        // This saves ~8-12s in the traditional flow
+        console.log(`🔍 Starting parallel discovery for ${guest.full_name}...`);
 
-        let searchResults = null;
-        let searchSource = 'none';
+        const discoveryPromises = [];
 
-        // Try Perplexity Search first
+        // 1. Perplexity Search
         if (perplexitySearch.isAvailable()) {
-            searchResults = await perplexitySearch.searchPerson(guest);
-            if (searchResults && searchResults.results.length > 0) {
-                searchSource = 'perplexity';
-                console.log(`✅ Perplexity: ${searchResults.results.length} results in ${searchResults.duration}s`);
+            discoveryPromises.push(perplexitySearch.searchPerson(guest).then(res => ({ source: 'perplexity', data: res })));
+        }
+
+        // 2. Initial Google Probe (Exact Name)
+        discoveryPromises.push(googleSearch.search(`"${guest.full_name}"`, 10).then(res => ({ source: 'google', data: res })));
+
+        const discoveryResults = await Promise.allSettled(discoveryPromises);
+
+        // Process results from both sources
+        for (const res of discoveryResults) {
+            if (res.status === 'fulfilled' && res.value.data) {
+                const source = res.value.source;
+                const items = source === 'perplexity' ? res.value.data.results : res.value.data;
+
+                if (items && Array.isArray(items)) {
+                    for (const result of items) {
+                        const link = result.link || result.url;
+                        if (link && !seenUrls.has(link)) {
+                            seenUrls.add(link);
+                            allResults.push({ ...result, link });
+                            if (link.includes('linkedin.com/in/')) {
+                                linkedInFound = true;
+                                console.log(`   ✅ LinkedIn found via ${source}: ${link}`);
+                            }
+                        }
+                    }
+                }
             }
         }
 
-        // FALLBACK TO GOOGLE if Perplexity unavailable or failed
-        if (!searchResults || searchResults.results.length === 0) {
-            console.log(`🔄 Falling back to Google SERP...`);
-            const probeQuery = `"${guest.full_name}"`;
-            const probeResults = await googleSearch.search(probeQuery, 10);
-            if (probeResults && probeResults.length > 0) {
-                searchResults = { results: probeResults.map(r => ({ ...r, link: r.link })) };
-                searchSource = 'google';
-            }
-        }
+        console.log(`📊 Discovery phase complete: ${allResults.length} unique results found (LinkedIn: ${linkedInFound ? '✓' : '✗'})`);
 
-        // Process results
-        if (searchResults && searchResults.results.length > 0) {
-            for (const result of searchResults.results) {
-                const link = result.link || result.url;
-                if (link && !seenUrls.has(link)) {
-                    seenUrls.add(link);
-                    allResults.push({ ...result, link });
-                    if (link.includes('linkedin.com/in/')) linkedInFound = true;
-                }
-            }
+        // AI Celebrity Detection on early results
+        const aiDetection = await this.detectCelebrityWithAI(guest, allResults);
+        // Require 0.9+ confidence AND a name match in results to skip LinkedIn search
+        if (aiDetection && aiDetection.isCelebrity && aiDetection.confidence >= 0.9) {
+            // Check if the primary name or aliases are actually present in our search results snippets
+            const primaryNameLower = aiDetection.primaryName?.toLowerCase();
+            const someResultsMatch = allResults.some(r =>
+                (r.title + ' ' + (r.snippet || '')).toLowerCase().includes(primaryNameLower) ||
+                (r.title + ' ' + (r.snippet || '')).toLowerCase().includes(guest.full_name.toLowerCase())
+            );
 
-            // AI Celebrity Detection on early results
-            const aiDetection = await this.detectCelebrityWithAI(guest, allResults);
-            // Require 0.9+ confidence AND a name match in results to skip LinkedIn search
-            if (aiDetection && aiDetection.isCelebrity && aiDetection.confidence >= 0.9) {
-                // Check if the primary name or aliases are actually present in our search results snippets
-                const primaryNameLower = aiDetection.primaryName?.toLowerCase();
-                const someResultsMatch = allResults.some(r =>
-                    (r.title + ' ' + (r.snippet || '')).toLowerCase().includes(primaryNameLower) ||
-                    (r.title + ' ' + (r.snippet || '')).toLowerCase().includes(guest.full_name.toLowerCase())
-                );
-
-                if (someResultsMatch) {
-                    celebrityInfo = aiDetection;
-                    console.log(`🌟 Confirmed Public Figure FOUND in results. Skipping deep person-search to avoid namesake mismatches.`);
-                } else {
-                    console.log(`⚠️ AI thinks it's a celebrity (${aiDetection.primaryName}), but no matching results found. Continuing deep search.`);
-                }
+            if (someResultsMatch) {
+                celebrityInfo = aiDetection;
+                console.log(`🌟 Confirmed Public Figure FOUND in results. Skipping deep person-search to avoid namesake mismatches.`);
+            } else {
+                console.log(`⚠️ AI thinks it's a celebrity (${aiDetection.primaryName}), but no matching results found. Continuing deep search.`);
             }
         }
 
