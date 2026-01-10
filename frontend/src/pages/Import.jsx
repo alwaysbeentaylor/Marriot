@@ -2,8 +2,10 @@ import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AddGuestForm from '../components/guests/AddGuestForm';
 import { apiFetch, apiPostFile } from '../utils/api';
+import { useLanguage } from '../contexts/LanguageContext';
 
 function Import({ onUpdate }) {
+    const { t } = useLanguage();
     const navigate = useNavigate();
     const [file, setFile] = useState(null);
     const [importing, setImporting] = useState(false);
@@ -281,9 +283,9 @@ function Import({ onUpdate }) {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h2 className="font-heading text-3xl font-semibold">Importeren</h2>
+                    <h2 className="font-heading text-3xl font-semibold">{t('Importeren')}</h2>
                     <p className="text-[var(--color-text-secondary)] mt-2">
-                        Upload een Excel of CSV bestand, of voeg handmatig gasten toe
+                        {t('Upload een Excel of CSV bestand, of voeg handmatig gasten toe')}
                     </p>
                 </div>
                 <div className="flex gap-3">
@@ -291,14 +293,14 @@ function Import({ onUpdate }) {
                         onClick={() => setShowBatches(!showBatches)}
                         className="btn btn-secondary"
                     >
-                        📋 Import Geschiedenis
+                        📋 {t('Import Geschiedenis')}
                     </button>
                     <button
                         onClick={() => setShowAddForm(true)}
                         className="btn btn-primary"
                     >
                         <span>+</span>
-                        Gast Toevoegen
+                        {t('Gast Toevoegen')}
                     </button>
                 </div>
             </div>
@@ -307,22 +309,22 @@ function Import({ onUpdate }) {
             {showBatches && (
                 <div className="card">
                     <div className="p-4 border-b border-[var(--color-border)]">
-                        <h3 className="font-semibold">Import Geschiedenis</h3>
+                        <h3 className="font-semibold">{t('Import Geschiedenis')}</h3>
                     </div>
                     {batches.length === 0 ? (
                         <div className="p-8 text-center text-[var(--color-text-secondary)]">
-                            Nog geen imports
+                            {t('Nog geen imports')}
                         </div>
                     ) : (
                         <table className="table">
                             <thead>
                                 <tr>
-                                    <th>Datum</th>
-                                    <th>Bestand</th>
-                                    <th>Totaal</th>
-                                    <th>Nieuw</th>
-                                    <th>Bijgewerkt</th>
-                                    <th>Acties</th>
+                                    <th>{t('Datum')}</th>
+                                    <th>{t('Bestand')}</th>
+                                    <th>{t('Totaal')}</th>
+                                    <th>{t('Nieuw')}</th>
+                                    <th>{t('Bijgewerkt')}</th>
+                                    <th>{t('Acties')}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -385,9 +387,9 @@ function Import({ onUpdate }) {
                 ) : (
                     <div className="space-y-2">
                         <div className="text-4xl">📋</div>
-                        <p className="font-medium">Sleep een bestand hierheen</p>
+                        <p className="font-medium">{t('Sleep een bestand hierheen')}</p>
                         <p className="text-sm text-[var(--color-text-secondary)]">
-                            Excel (.xlsx) of CSV - klik om te selecteren
+                            {t('Excel of CSV - klik om te selecteren')}
                         </p>
                     </div>
                 )}
@@ -414,7 +416,7 @@ function Import({ onUpdate }) {
                         onClick={() => { setFile(null); setPreview(null); }}
                         className="btn btn-secondary"
                     >
-                        Annuleren
+                        {t('Annuleren')}
                     </button>
                 </div>
             )}

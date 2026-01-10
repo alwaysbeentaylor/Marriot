@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { apiFetch } from '../utils/api';
+import { useLanguage } from '../contexts/LanguageContext';
 
 function Dashboard({ onUpdate }) {
+    const { t } = useLanguage();
     const [stats, setStats] = useState({
         totalGuests: 0,
         vipGuests: 0,
@@ -149,19 +151,19 @@ function Dashboard({ onUpdate }) {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div className="stat-card">
                     <div className="stat-value">{stats.totalGuests}</div>
-                    <div className="stat-label">Totaal Gasten</div>
+                    <div className="stat-label">{t('Totaal Gasten')}</div>
                 </div>
                 <div className="stat-card">
                     <div className="stat-value">{stats.vipGuests}</div>
-                    <div className="stat-label">VIP Gasten</div>
+                    <div className="stat-label">{t('VIP Gasten')}</div>
                 </div>
                 <div className="stat-card">
                     <div className="stat-value">{stats.pendingResearch}</div>
-                    <div className="stat-label">Wacht op Onderzoek</div>
+                    <div className="stat-label">{t('Wacht op Onderzoek')}</div>
                 </div>
                 <div className="stat-card">
                     <div className="stat-value">{stats.recentImports}</div>
-                    <div className="stat-label">Recent Geïmporteerd</div>
+                    <div className="stat-label">{t('Recent Geïmporteerd')}</div>
                 </div>
             </div>
 
@@ -266,21 +268,21 @@ function Dashboard({ onUpdate }) {
             {/* Recent Guests */}{/* Recent Guests */}
             <div className="card">
                 <div className="p-6 border-b border-[var(--color-border)]">
-                    <h3 className="font-heading text-xl font-semibold">Recente VIPs</h3>
+                    <h3 className="font-heading text-xl font-semibold">{t('Recente VIPs')}</h3>
                 </div>
 
                 {loading ? (
                     <div className="p-12 text-center text-[var(--color-text-secondary)]">
-                        Laden...
+                        {t('Laden...')}
                     </div>
                 ) : recentGuests.length > 0 ? (
                     <table className="table">
                         <thead>
                             <tr>
-                                <th>Naam</th>
-                                <th>Bedrijf</th>
-                                <th>Land</th>
-                                <th>VIP Score</th>
+                                <th>{t('Naam')}</th>
+                                <th>{t('Bedrijf')}</th>
+                                <th>{t('Land')}</th>
+                                <th>{t('VIP Score')}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -292,7 +294,7 @@ function Dashboard({ onUpdate }) {
                                             {enrichmentProgress?.current === guest.id && (
                                                 <span className="inline-flex items-center text-[10px] text-purple-600 font-normal bg-purple-50 px-2 py-0.5 rounded-full">
                                                     <span className="animate-spin mr-1">⟳</span>
-                                                    Bezig
+                                                    {t('Bezig')}
                                                 </span>
                                             )}
                                         </div>
@@ -310,11 +312,11 @@ function Dashboard({ onUpdate }) {
                                             </span>
                                         ) : enrichmentProgress?.current === guest.id ? (
                                             <span className="text-[var(--color-text-secondary)] text-xs italic">
-                                                Analyse bezig...
+                                                {t('Analyse bezig...')}
                                             </span>
                                         ) : (
                                             <span className="text-[var(--color-text-secondary)] text-sm">
-                                                Niet onderzocht
+                                                {t('Niet onderzocht')}
                                             </span>
                                         )}
                                     </td>
@@ -325,13 +327,13 @@ function Dashboard({ onUpdate }) {
                 ) : (
                     <div className="p-12 text-center">
                         <p className="text-[var(--color-text-secondary)]">
-                            Nog geen gasten geïmporteerd
+                            {t('Nog geen gasten geïmporteerd')}
                         </p>
                         <a
                             href="/import"
                             className="btn btn-primary mt-4 inline-flex"
                         >
-                            Gasten Importeren
+                            {t('Gasten Importeren')}
                         </a>
                     </div>
                 )}
@@ -341,16 +343,16 @@ function Dashboard({ onUpdate }) {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <a href="/import" className="card p-6 hover:border-[var(--color-accent-gold)] transition-colors block">
                     <div className="text-2xl mb-3">📋</div>
-                    <h4 className="font-semibold mb-2">CSV Importeren</h4>
+                    <h4 className="font-semibold mb-2">{t('CSV Importeren')}</h4>
                     <p className="text-sm text-[var(--color-text-secondary)]">
-                        Upload een Mews export om nieuwe gasten toe te voegen
+                        {t('Upload een bestand om nieuwe gasten toe te voegen')}
                     </p>
                 </a>
                 <a href="/guests" className="card p-6 hover:border-[var(--color-accent-gold)] transition-colors block">
                     <div className="text-2xl mb-3">👤</div>
-                    <h4 className="font-semibold mb-2">Gast Toevoegen</h4>
+                    <h4 className="font-semibold mb-2">{t('Gast Toevoegen')}</h4>
                     <p className="text-sm text-[var(--color-text-secondary)]">
-                        Handmatig een nieuwe gast registreren
+                        {t('Handmatig een nieuwe gast registreren')}
                     </p>
                 </a>
                 <div
@@ -358,9 +360,9 @@ function Dashboard({ onUpdate }) {
                     className="card p-6 hover:border-[var(--color-accent-gold)] transition-colors cursor-pointer group col-span-1 md:col-span-2 lg:col-span-2 flex flex-col items-center justify-center text-center py-10"
                 >
                     <div className="text-4xl mb-4">📚</div>
-                    <h4 className="font-semibold text-xl mb-2">Download Rapport</h4>
+                    <h4 className="font-semibold text-xl mb-2">{t('Download Rapport')}</h4>
                     <p className="text-sm text-[var(--color-text-secondary)]">
-                        Download PDF van alle onderzochte gasten
+                        {t('Download PDF van alle onderzochte gasten')}
                     </p>
                 </div>
             </div>

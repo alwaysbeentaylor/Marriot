@@ -587,10 +587,28 @@ function Guests({ onUpdate }) {
                         value={sortOrder}
                         onChange={(e) => setSortOrder(e.target.value)}
                         className="input"
-                        style={{ width: 'auto', minWidth: '140px' }}
+                        style={{ width: 'auto', minWidth: '180px' }}
                     >
-                        <option value="newest">Nieuwste eerst</option>
-                        <option value="oldest">Oudste eerst</option>
+                        <optgroup label="Datum">
+                            <option value="newest">Nieuwste eerst</option>
+                            <option value="oldest">Oudste eerst</option>
+                        </optgroup>
+                        <optgroup label="Naam">
+                            <option value="name_asc">Naam A-Z</option>
+                            <option value="name_desc">Naam Z-A</option>
+                        </optgroup>
+                        <optgroup label="VIP Score">
+                            <option value="vip_high">Hoogste VIP eerst</option>
+                            <option value="vip_low">Laagste VIP eerst</option>
+                        </optgroup>
+                        <optgroup label="Bedrijf">
+                            <option value="company_asc">Bedrijf A-Z</option>
+                            <option value="company_desc">Bedrijf Z-A</option>
+                        </optgroup>
+                        <optgroup label="Land">
+                            <option value="country_asc">Land A-Z</option>
+                            <option value="country_desc">Land Z-A</option>
+                        </optgroup>
                     </select>
 
                     {/* Per pagina dropdown */}

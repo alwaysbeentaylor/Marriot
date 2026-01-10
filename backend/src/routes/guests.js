@@ -62,9 +62,43 @@ router.get('/', (req, res) => {
             query += ` AND r.vip_score >= 7`;
         }
 
-        // Sortering: 'oldest' of 'newest'
-        const sortOrder = sort === 'oldest' ? 'ASC' : 'DESC';
-        query += ` ORDER BY g.created_at ${sortOrder} LIMIT ? OFFSET ?`;
+        // Sortering met meerdere opties
+        let orderClause = '';
+        switch (sort) {
+            case 'oldest':
+                orderClause = 'g.created_at ASC';
+                break;
+            case 'newest':
+                orderClause = 'g.created_at DESC';
+                break;
+            case 'name_asc':
+                orderClause = 'g.full_name COLLATE NOCASE ASC';
+                break;
+            case 'name_desc':
+                orderClause = 'g.full_name COLLATE NOCASE DESC';
+                break;
+            case 'vip_high':
+                orderClause = 'COALESCE(r.vip_score, 0) DESC, g.created_at DESC';
+                break;
+            case 'vip_low':
+                orderClause = 'COALESCE(r.vip_score, 0) ASC, g.created_at DESC';
+                break;
+            case 'company_asc':
+                orderClause = 'COALESCE(r.company_name, g.company, "") COLLATE NOCASE ASC, g.full_name COLLATE NOCASE ASC';
+                break;
+            case 'company_desc':
+                orderClause = 'COALESCE(r.company_name, g.company, "") COLLATE NOCASE DESC, g.full_name COLLATE NOCASE ASC';
+                break;
+            case 'country_asc':
+                orderClause = 'COALESCE(g.country, "") COLLATE NOCASE ASC, g.full_name COLLATE NOCASE ASC';
+                break;
+            case 'country_desc':
+                orderClause = 'COALESCE(g.country, "") COLLATE NOCASE DESC, g.full_name COLLATE NOCASE ASC';
+                break;
+            default:
+                orderClause = 'g.created_at DESC';
+        }
+        query += ` ORDER BY ${orderClause} LIMIT ? OFFSET ?`;
         params.push(parseInt(limit), parseInt(offset));
 
         const guests = db.prepare(query).all(...params);
