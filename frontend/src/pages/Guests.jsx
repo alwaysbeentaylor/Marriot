@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import GuestModal from '../components/guests/GuestModal';
 import AddGuestForm from '../components/guests/AddGuestForm';
 import TypingAnimation from '../components/ui/TypingAnimation';
@@ -31,9 +31,29 @@ function Guests({ onUpdate }) {
     // Ref to track previous filter/sort values for smart page reset
     const prevFiltersRef = useRef({ search, filter, sortOrder, itemsPerPage });
 
+    // Fetch gasten functie met useCallback voor stabiele referentie
+    const fetchGuests = useCallback(async () => {
+        setLoading(true);
+        try {
+            const offset = (currentPage - 1) * itemsPerPage;
+            let url = `/api/guests?limit=${itemsPerPage}&offset=${offset}&sort=${sortOrder}`;
+            if (search) url += `&search=${encodeURIComponent(search)}`;
+            if (filter === 'vip') url += `&vipOnly=true`;
+            if (filter === 'pending') url += `&hasResearch=false`;
+
+            const data = await apiFetch(url);
+            setGuests(data.guests || []);
+            setTotal(data.total || 0);
+        } catch (error) {
+            console.log('Fout bij ophalen gasten');
+        } finally {
+            setLoading(false);
+        }
+    }, [currentPage, itemsPerPage, sortOrder, search, filter]);
+
     useEffect(() => {
         fetchGuests();
-    }, [search, filter, sortOrder, currentPage, itemsPerPage]);
+    }, [fetchGuests]);
 
     // Reset naar pagina 1 ALLEEN wanneer filters, zoekterm, of page size veranderen
     // Dit voorkomt reset tijdens automatische data refreshes
@@ -95,7 +115,7 @@ function Guests({ onUpdate }) {
         // Poll every 2 seconds for faster updates
         const interval = setInterval(checkActiveQueue, 2000);
         return () => clearInterval(interval);
-    }, []);
+    }, [fetchGuests, onUpdate]);
 
     // Indien enrichment bezig is, ververs gastenlijst periodiek (backup refresh)
     useEffect(() => {
@@ -106,26 +126,7 @@ function Guests({ onUpdate }) {
             }, 3000); // Faster refresh: 3 seconds instead of 5
             return () => clearInterval(interval);
         }
-    }, [enrichmentProgress]);
-
-    const fetchGuests = async () => {
-        setLoading(true);
-        try {
-            const offset = (currentPage - 1) * itemsPerPage;
-            let url = `/api/guests?limit=${itemsPerPage}&offset=${offset}&sort=${sortOrder}`;
-            if (search) url += `&search=${encodeURIComponent(search)}`;
-            if (filter === 'vip') url += `&vipOnly=true`;
-            if (filter === 'pending') url += `&hasResearch=false`;
-
-            const data = await apiFetch(url);
-            setGuests(data.guests || []);
-            setTotal(data.total || 0);
-        } catch (error) {
-            console.log('Fout bij ophalen gasten');
-        } finally {
-            setLoading(false);
-        }
-    };
+    }, [enrichmentProgress, fetchGuests, onUpdate]);
 
     const totalPages = Math.ceil(total / itemsPerPage);
 
