@@ -154,6 +154,91 @@ const translations = {
         'Website': 'Website',
         'Bronnen': 'Bronnen',
         'Sources': 'Bronnen',
+
+        // Form fields
+        'E-mail': 'E-mail',
+        'Telefoon': 'Telefoon',
+        'Phone': 'Telefoon',
+        'Totaal Verblijven': 'Totaal Verblijven',
+        'Total Stays': 'Totaal Verblijven',
+        'Eerste Bezoek': 'Eerste Bezoek',
+        'First Visit': 'Eerste Bezoek',
+        'Profielfoto URL': 'Profielfoto URL',
+        'Profile Photo URL': 'Profielfoto URL',
+        'LinkedIn URL': 'LinkedIn URL',
+        'Notities': 'Notities',
+        'Notes': 'Notities',
+
+        // Messages
+        'Rapport bijgewerkt!': 'Rapport bijgewerkt!',
+        'Report updated!': 'Rapport bijgewerkt!',
+        'Fout bij analyse': 'Fout bij analyse',
+        'Analysis failed': 'Fout bij analyse',
+        'Vorig rapport hersteld': 'Vorig rapport hersteld',
+        'Previous report restored': 'Vorig rapport hersteld',
+        'Herstellen mislukt': 'Herstellen mislukt',
+        'Restore failed': 'Herstellen mislukt',
+
+        // Influence levels
+        'Hoog': 'Hoog',
+        'High': 'Hoog',
+        'Gemiddeld': 'Gemiddeld',
+        'Medium': 'Gemiddeld',
+        'Laag': 'Laag',
+        'Low': 'Laag',
+
+        // Research
+        'Onderzoeksresultaten': 'Onderzoeksresultaten',
+        'Geen openbare informatie gevonden': 'Geen openbare informatie gevonden',
+        'No public information found': 'Geen openbare informatie gevonden',
+        'Onderzoek opnieuw starten': 'Onderzoek opnieuw starten',
+        'Restart research': 'Onderzoek opnieuw starten',
+        'Handmatig zoeken': 'Handmatig zoeken',
+        'Manual search': 'Handmatig zoeken',
+        'Bekijk bronnen': 'Bekijk bronnen',
+        'View sources': 'Bekijk bronnen',
+        'bron': 'bron',
+        'bronnen': 'bronnen',
+        'source': 'bron',
+        'sources': 'bronnen',
+
+        // Buttons
+        'Bewerken': 'Bewerken',
+        'Edit': 'Bewerken',
+        'Herstel vorig rapport': 'Herstel vorig rapport',
+        'Restore previous report': 'Herstel vorig rapport',
+        'Wis onderzoeksdata': 'Wis onderzoeksdata',
+        'Clear research data': 'Wis onderzoeksdata',
+        'Verwijder gast': 'Verwijder gast',
+        'Delete guest': 'Verwijder gast',
+        'Download PDF': 'Download PDF',
+
+        // Collapsible sections
+        'Bedrijfsdetails': 'Bedrijfsdetails',
+        'VIP Indicatoren': 'VIP Indicatoren',
+        'Carrière': 'Carrière',
+        'Prestaties': 'Prestaties',
+        'Type Bedrijf': 'Type Bedrijf',
+        'Wat doen ze': 'Wat doen ze',
+        'Rol Inschatting': 'Rol Inschatting',
+        'Marktpositie': 'Marktpositie',
+        'Medewerkers': 'Medewerkers',
+        'Vermogen': 'Vermogen',
+        'Invloed': 'Invloed',
+
+        // Extra labels
+        'Volgers': 'Volgers',
+        'Followers': 'Volgers',
+        'Per platform': 'Per platform',
+        'By platform': 'Per platform',
+        'Onbekend': 'Onbekend',
+        'Unknown': 'Onbekend',
+        'Functie': 'Functie',
+        'Bekijk profiel': 'Bekijk profiel',
+        'View profile': 'Bekijk profiel',
+        'Service Aanbevelingen': 'Service Aanbevelingen',
+        'Service Recommendations': 'Service Aanbevelingen',
+        'Status': 'Status',
     },
 
     en: {
@@ -308,6 +393,80 @@ const translations = {
         'Website': 'Website',
         'Bronnen': 'Sources',
         'Sources': 'Sources',
+
+        // Form fields
+        'E-mail': 'Email',
+        'Telefoon': 'Phone',
+        'Phone': 'Phone',
+        'Totaal Verblijven': 'Total Stays',
+        'Total Stays': 'Total Stays',
+        'Eerste Bezoek': 'First Visit',
+        'First Visit': 'First Visit',
+        'Profielfoto URL': 'Profile Photo URL',
+        'Profile Photo URL': 'Profile Photo URL',
+        'LinkedIn URL': 'LinkedIn URL',
+        'Notities': 'Notes',
+        'Notes': 'Notes',
+
+        // Messages
+        'Rapport bijgewerkt!': 'Report updated!',
+        'Report updated!': 'Report updated!',
+        'Fout bij analyse': 'Analysis failed',
+        'Analysis failed': 'Analysis failed',
+        'Vorig rapport hersteld': 'Previous report restored',
+        'Previous report restored': 'Previous report restored',
+        'Herstellen mislukt': 'Restore failed',
+        'Restore failed': 'Restore failed',
+
+        // Influence levels
+        'Hoog': 'High',
+        'High': 'High',
+        'Gemiddeld': 'Medium',
+        'Medium': 'Medium',
+        'Laag': 'Low',
+        'Low': 'Low',
+
+        // Research
+        'Onderzoeksresultaten': 'Research Results',
+        'Geen openbare informatie gevonden': 'No public information found',
+        'No public information found': 'No public information found',
+        'Onderzoek opnieuw starten': 'Restart research',
+        'Restart research': 'Restart research',
+        'Handmatig zoeken': 'Manual search',
+        'Manual search': 'Manual search',
+        'Bekijk bronnen': 'View sources',
+        'View sources': 'View sources',
+        'bron': 'source',
+        'bronnen': 'sources',
+        'source': 'source',
+        'sources': 'sources',
+
+        // Buttons
+        'Bewerken': 'Edit',
+        'Edit': 'Edit',
+        'Herstel vorig rapport': 'Restore previous report',
+        'Restore previous report': 'Restore previous report',
+        'Wis onderzoeksdata': 'Clear research data',
+        'Clear research data': 'Clear research data',
+        'Verwijder gast': 'Delete guest',
+        'Delete guest': 'Delete guest',
+        'Download PDF': 'Download PDF',
+
+        // Collapsible sections
+        'Bedrijfsdetails': 'Company Details',
+        'VIP Indicatoren': 'VIP Indicators',
+
+        // Extra labels
+        'Volgers': 'Followers',
+        'Followers': 'Followers',
+        'Per platform': 'By platform',
+        'By platform': 'By platform',
+        'Onbekend': 'Unknown',
+        'Unknown': 'Unknown',
+        'Bekijk profiel': 'View profile',
+        'View profile': 'View profile',
+        'Service Aanbevelingen': 'Service Recommendations',
+        'Service Recommendations': 'Service Recommendations',
     }
 };
 

@@ -157,10 +157,10 @@ function GuestModal({ guest, onClose, onUpdate, onResearch, onDownloadPDF }) {
     };
 
     const getInfluenceLevel = (score) => {
-        if (score >= 9) return 'VIP';
-        if (score >= 7) return 'Hoog';
-        if (score >= 5) return 'Gemiddeld';
-        return 'Laag';
+        if (score >= 9) return t('VIP');
+        if (score >= 7) return t('Hoog');
+        if (score >= 5) return t('Gemiddeld');
+        return t('Laag');
     };
 
     const handleManualGoogleSearch = () => {
@@ -289,7 +289,7 @@ function GuestModal({ guest, onClose, onUpdate, onResearch, onDownloadPDF }) {
                     <div className="flex items-center justify-between">
                         <div>
                             <span className="text-sm text-[var(--color-text-secondary)] uppercase tracking-wide">
-                                VIP Score
+                                {t('VIP Score')}
                             </span>
                             <div className="vip-score-display mt-2">
                                 <span className="vip-score-number">{vipScore}</span>
@@ -318,7 +318,7 @@ function GuestModal({ guest, onClose, onUpdate, onResearch, onDownloadPDF }) {
                 <div className="p-6 grid grid-cols-2 gap-4">
                     <div>
                         <span className="text-xs text-[var(--color-text-secondary)] uppercase tracking-wide block mb-1">
-                            E-mail
+                            {t('E-mail')}
                         </span>
                         {isEditing ? (
                             <input
@@ -333,7 +333,7 @@ function GuestModal({ guest, onClose, onUpdate, onResearch, onDownloadPDF }) {
                     </div>
                     <div>
                         <span className="text-xs text-[var(--color-text-secondary)] uppercase tracking-wide block mb-1">
-                            Telefoon
+                            {t('Telefoon')}
                         </span>
                         {isEditing ? (
                             <input
@@ -348,7 +348,7 @@ function GuestModal({ guest, onClose, onUpdate, onResearch, onDownloadPDF }) {
                     </div>
                     <div>
                         <span className="text-xs text-[var(--color-text-secondary)] uppercase tracking-wide block mb-1">
-                            Land
+                            {t('Land')}
                         </span>
                         {isEditing ? (
                             <input
@@ -363,7 +363,7 @@ function GuestModal({ guest, onClose, onUpdate, onResearch, onDownloadPDF }) {
                     </div>
                     <div>
                         <span className="text-xs text-[var(--color-text-secondary)] uppercase tracking-wide block mb-1">
-                            Bedrijf
+                            {t('Bedrijf')}
                         </span>
                         {isEditing ? (
                             <input
@@ -385,13 +385,13 @@ function GuestModal({ guest, onClose, onUpdate, onResearch, onDownloadPDF }) {
                     </div>
                     <div>
                         <span className="text-xs text-[var(--color-text-secondary)] uppercase tracking-wide block mb-1">
-                            Totaal Verblijven
+                            {t('Totaal Verblijven')}
                         </span>
                         <span className="text-sm">{guest.total_stays || 1}x</span>
                     </div>
                     <div>
                         <span className="text-xs text-[var(--color-text-secondary)] uppercase tracking-wide block mb-1">
-                            Eerste Bezoek
+                            {t('Eerste Bezoek')}
                         </span>
                         <span className="text-sm">{guest.first_seen || '-'}</span>
                     </div>
@@ -399,7 +399,7 @@ function GuestModal({ guest, onClose, onUpdate, onResearch, onDownloadPDF }) {
                     {isEditing && (
                         <div className="col-span-2">
                             <span className="text-xs text-[var(--color-text-secondary)] uppercase tracking-wide block mb-1">
-                                Profielfoto URL
+                                {t('Profielfoto URL')}
                             </span>
                             <input
                                 type="text"
@@ -416,7 +416,7 @@ function GuestModal({ guest, onClose, onUpdate, onResearch, onDownloadPDF }) {
 
                     <div className="col-span-2">
                         <span className="text-xs text-[var(--color-text-secondary)] uppercase tracking-wide block mb-1">
-                            LinkedIn URL
+                            {t('LinkedIn URL')}
                         </span>
                         {isEditing ? (
                             <input
@@ -436,14 +436,14 @@ function GuestModal({ guest, onClose, onUpdate, onResearch, onDownloadPDF }) {
                 {research && (
                     <div className="p-6 border-t border-[var(--color-border)]">
                         <h4 className="font-semibold text-sm text-[var(--color-accent-gold)] uppercase tracking-wide mb-4">
-                            Onderzoeksresultaten
+                            {t('Onderzoeksresultaten')}
                         </h4>
 
                         {research.no_results_found === 1 && (
                             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-4 text-red-700 shadow-sm animate-in fade-in slide-in-from-top-2 duration-300">
                                 <div className="text-2xl mt-0.5">⚠️</div>
                                 <div className="space-y-1">
-                                    <p className="font-bold text-base leading-tight">Geen openbare informatie gevonden</p>
+                                    <p className="font-bold text-base leading-tight">{t('Geen openbare informatie gevonden')}</p>
                                     <p className="text-sm opacity-90 leading-relaxed">
                                         Onze onderzoeker kon geen betrouwbare publieke profielen, nieuwsberichten of bedrijfsgegevens vinden voor deze gast.
                                         Dit kan betekenen dat de gast een zeer beperkte online aanwezigheid heeft of dat de gegevens afgeschermd zijn.
@@ -458,13 +458,13 @@ function GuestModal({ guest, onClose, onUpdate, onResearch, onDownloadPDF }) {
                                 <div className="grid grid-cols-2 gap-4">
                                     {research.net_worth && (
                                         <div>
-                                            <span className="text-xs text-[var(--color-text-secondary)] uppercase">Net Worth</span>
+                                            <span className="text-xs text-[var(--color-text-secondary)] uppercase">{t('Net Worth')}</span>
                                             <div className="text-lg font-semibold text-[var(--color-accent-gold)]">{research.net_worth}</div>
                                         </div>
                                     )}
                                     {(research.followers_estimate || research.instagram_followers || research.twitter_followers) && (
                                         <div>
-                                            <span className="text-xs text-[var(--color-text-secondary)] uppercase">Volgers (totaal)</span>
+                                            <span className="text-xs text-[var(--color-text-secondary)] uppercase">{t('Volgers')}</span>
                                             <div className="text-lg font-semibold">{research.followers_estimate || 'Onbekend'}</div>
                                         </div>
                                     )}
@@ -472,7 +472,7 @@ function GuestModal({ guest, onClose, onUpdate, onResearch, onDownloadPDF }) {
                                 {/* Follower Breakdown by Platform */}
                                 {(research.instagram_followers || research.twitter_followers) && (
                                     <div className="mt-3 pt-3 border-t border-[var(--color-border)]">
-                                        <span className="text-[10px] text-[var(--color-text-secondary)] uppercase font-semibold block mb-2">Uitsplitsing per platform</span>
+                                        <span className="text-[10px] text-[var(--color-text-secondary)] uppercase font-semibold block mb-2">{t('Per platform')}</span>
                                         <div className="flex flex-wrap gap-3">
                                             {research.instagram_followers && (
                                                 <div className="flex items-center gap-1.5 text-sm">
@@ -893,9 +893,9 @@ function GuestModal({ guest, onClose, onUpdate, onResearch, onDownloadPDF }) {
                                                     <summary className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors list-none">
                                                         <div className="flex items-center gap-3">
                                                             <span className="text-lg">🏢</span>
-                                                            <span className="text-sm font-semibold text-gray-800">Bedrijfsdetails</span>
+                                                            <span className="text-sm font-semibold text-gray-800">{t('Bedrijfsdetails')}</span>
                                                             {fullReport.company_analysis?.ownership_likelihood === 'high' && (
-                                                                <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold">Waarschijnlijk eigenaar</span>
+                                                                <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold">{t('Waarschijnlijk eigenaar')}</span>
                                                             )}
                                                         </div>
                                                         <span className="transform group-open:rotate-180 transition-transform text-gray-400">▼</span>
@@ -903,35 +903,35 @@ function GuestModal({ guest, onClose, onUpdate, onResearch, onDownloadPDF }) {
                                                     <div className="px-4 pb-4 pt-0 border-t border-gray-100 space-y-3">
                                                         {fullReport.company_analysis?.company_type && (
                                                             <div>
-                                                                <span className="text-[10px] uppercase font-bold text-gray-500 block mb-1">🏷️ Type Bedrijf</span>
+                                                                <span className="text-[10px] uppercase font-bold text-gray-500 block mb-1">🏷️ {t('Type Bedrijf')}</span>
                                                                 <p className="text-sm text-gray-700">{fullReport.company_analysis.company_type}</p>
                                                             </div>
                                                         )}
                                                         {fullReport.company_analysis?.company_description && (
                                                             <div>
-                                                                <span className="text-[10px] uppercase font-bold text-gray-500 block mb-1">📝 Wat doen ze</span>
+                                                                <span className="text-[10px] uppercase font-bold text-gray-500 block mb-1">📝 {t('Wat doen ze')}</span>
                                                                 <p className="text-sm text-gray-700">{fullReport.company_analysis.company_description}</p>
                                                             </div>
                                                         )}
                                                         {fullReport.company_analysis?.ownership_likelihood && fullReport.company_analysis.ownership_likelihood !== 'unknown' && (
                                                             <div>
-                                                                <span className="text-[10px] uppercase font-bold text-gray-500 block mb-1">👤 Rol Inschatting</span>
+                                                                <span className="text-[10px] uppercase font-bold text-gray-500 block mb-1">👤 {t('Rol Inschatting')}</span>
                                                                 <p className="text-sm text-gray-700">
-                                                                    {fullReport.company_analysis.ownership_likelihood === 'high' && '🟢 Waarschijnlijk eigenaar of besluitvormer'}
-                                                                    {fullReport.company_analysis.ownership_likelihood === 'medium' && '🟡 Mogelijk leidinggevende positie'}
-                                                                    {fullReport.company_analysis.ownership_likelihood === 'low' && '⚪ Waarschijnlijk medewerker'}
+                                                                    {fullReport.company_analysis.ownership_likelihood === 'high' && `🟢 ${t('Waarschijnlijk eigenaar of besluitvormer')}`}
+                                                                    {fullReport.company_analysis.ownership_likelihood === 'medium' && `🟡 ${t('Mogelijk leidinggevende positie')}`}
+                                                                    {fullReport.company_analysis.ownership_likelihood === 'low' && `⚪ ${t('Waarschijnlijk medewerker')}`}
                                                                 </p>
                                                             </div>
                                                         )}
                                                         {fullReport.company_analysis?.company_position && (
                                                             <div>
-                                                                <span className="text-[10px] uppercase font-bold text-gray-500 block mb-1">📊 Marktpositie</span>
+                                                                <span className="text-[10px] uppercase font-bold text-gray-500 block mb-1">📊 {t('Marktpositie')}</span>
                                                                 <p className="text-sm text-gray-700">{fullReport.company_analysis.company_position}</p>
                                                             </div>
                                                         )}
                                                         {fullReport.company_analysis?.employee_count && (
                                                             <div>
-                                                                <span className="text-[10px] uppercase font-bold text-gray-500 block mb-1">👥 Medewerkers</span>
+                                                                <span className="text-[10px] uppercase font-bold text-gray-500 block mb-1">👥 {t('Medewerkers')}</span>
                                                                 <p className="text-sm text-gray-700">{fullReport.company_analysis.employee_count}</p>
                                                             </div>
                                                         )}
@@ -945,7 +945,7 @@ function GuestModal({ guest, onClose, onUpdate, onResearch, onDownloadPDF }) {
                                                     <summary className="flex items-center justify-between p-4 cursor-pointer hover:bg-purple-100/50 transition-colors list-none">
                                                         <div className="flex items-center gap-3">
                                                             <span className="text-lg">⭐</span>
-                                                            <span className="text-sm font-semibold text-purple-800">VIP Indicatoren</span>
+                                                            <span className="text-sm font-semibold text-purple-800">{t('VIP Indicatoren')}</span>
                                                         </div>
                                                         <span className="transform group-open:rotate-180 transition-transform text-purple-400">▼</span>
                                                     </summary>
@@ -953,19 +953,19 @@ function GuestModal({ guest, onClose, onUpdate, onResearch, onDownloadPDF }) {
                                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-3">
                                                             {fullReport.vip_indicators?.wealth_signals && (
                                                                 <div className="bg-white/70 rounded-lg p-3 border border-purple-100">
-                                                                    <span className="text-[10px] uppercase font-bold text-purple-600 block mb-1">💰 Vermogen</span>
+                                                                    <span className="text-[10px] uppercase font-bold text-purple-600 block mb-1">💰 {t('Vermogen')}</span>
                                                                     <p className="text-xs text-gray-700">{fullReport.vip_indicators.wealth_signals}</p>
                                                                 </div>
                                                             )}
                                                             {fullReport.vip_indicators?.influence_factors && (
                                                                 <div className="bg-white/70 rounded-lg p-3 border border-purple-100">
-                                                                    <span className="text-[10px] uppercase font-bold text-purple-600 block mb-1">🌟 Invloed</span>
+                                                                    <span className="text-[10px] uppercase font-bold text-purple-600 block mb-1">🌟 {t('Invloed')}</span>
                                                                     <p className="text-xs text-gray-700">{fullReport.vip_indicators.influence_factors}</p>
                                                                 </div>
                                                             )}
                                                             {fullReport.vip_indicators?.status_markers && (
                                                                 <div className="bg-white/70 rounded-lg p-3 border border-purple-100">
-                                                                    <span className="text-[10px] uppercase font-bold text-purple-600 block mb-1">👑 Status</span>
+                                                                    <span className="text-[10px] uppercase font-bold text-purple-600 block mb-1">👑 {t('Status')}</span>
                                                                     <p className="text-xs text-gray-700">{fullReport.vip_indicators.status_markers}</p>
                                                                 </div>
                                                             )}
@@ -982,7 +982,7 @@ function GuestModal({ guest, onClose, onUpdate, onResearch, onDownloadPDF }) {
                                                     <div className="flex items-center justify-between">
                                                         <div className="flex items-center gap-2">
                                                             <span className="text-lg">🎯</span>
-                                                            <h5 className="text-sm font-bold text-white uppercase tracking-wide">Service Aanbevelingen</h5>
+                                                            <h5 className="text-sm font-bold text-white uppercase tracking-wide">{t('Service Aanbevelingen')}</h5>
                                                         </div>
                                                         {fullReport.service_recommendations?.priority_level && (
                                                             <span className="bg-white/20 text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase">
