@@ -387,9 +387,9 @@ function Guests({ onUpdate }) {
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h2 className="font-heading text-3xl font-semibold">Gasten</h2>
+                    <h2 className="font-heading text-3xl font-semibold">{t('Gasten')}</h2>
                     <p className="text-[var(--color-text-secondary)] mt-1">
-                        {total} gasten gevonden
+                        {total} {t('gasten gevonden')}
                     </p>
                 </div>
                 <div className="flex gap-2 flex-wrap">
@@ -400,20 +400,20 @@ function Guests({ onUpdate }) {
                                 disabled={deletingSelected}
                                 className="btn btn-secondary border-red-500 text-red-500 hover:bg-red-50"
                             >
-                                🗑️ Verwijderen ({selectedIds.length})
+                                🗑️ {t('Verwijderen')} ({selectedIds.length})
                             </button>
                             <button
                                 onClick={handleDownloadSelected}
                                 disabled={downloadingSelected}
                                 className={`btn btn-secondary border-[var(--color-accent-gold)] text-[var(--color-accent-gold)] ${downloadingSelected ? 'opacity-50' : ''}`}
                             >
-                                {downloadingSelected ? '📄 Genereren...' : `📄 Download (${selectedIds.length})`}
+                                {downloadingSelected ? `📄 ${t('Genereren...')}` : `📄 ${t('Download')} (${selectedIds.length})`}
                             </button>
                             <button
                                 onClick={handleBulkResearch}
                                 className="btn btn-secondary border-purple-500 text-purple-600 hover:bg-purple-50"
                             >
-                                🔍 Verrijken
+                                🔍 {t('Verrijken')}
                             </button>
                         </>
                     )}
@@ -422,7 +422,7 @@ function Guests({ onUpdate }) {
                         className="btn btn-primary"
                     >
                         <span>+</span>
-                        Gast Toevoegen
+                        {t('Gast Toevoegen')}
                     </button>
                 </div>
             </div>
@@ -556,7 +556,7 @@ function Guests({ onUpdate }) {
                 <div className="flex-1">
                     <input
                         type="text"
-                        placeholder="Zoek op naam, email of bedrijf..."
+                        placeholder={t('Zoek op naam, email of bedrijf...')}
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         className="input"
@@ -568,7 +568,7 @@ function Guests({ onUpdate }) {
                         onClick={() => setFilter('all')}
                         className={`btn ${filter === 'all' ? 'btn-primary' : 'btn-secondary'}`}
                     >
-                        Alle
+                        {t('Alle')}
                     </button>
                     <button
                         onClick={() => setFilter('vip')}
@@ -580,7 +580,7 @@ function Guests({ onUpdate }) {
                         onClick={() => setFilter('pending')}
                         className={`btn ${filter === 'pending' ? 'btn-primary' : 'btn-secondary'}`}
                     >
-                        Niet onderzocht
+                        {t('Niet onderzocht')}
                     </button>
 
                     {/* Sortering dropdown */}
@@ -590,25 +590,25 @@ function Guests({ onUpdate }) {
                         className="input"
                         style={{ width: 'auto', minWidth: '180px' }}
                     >
-                        <optgroup label="Datum">
-                            <option value="newest">Nieuwste eerst</option>
-                            <option value="oldest">Oudste eerst</option>
+                        <optgroup label={t('Datum')}>
+                            <option value="newest">{t('Nieuwste eerst')}</option>
+                            <option value="oldest">{t('Oudste eerst')}</option>
                         </optgroup>
-                        <optgroup label="Naam">
-                            <option value="name_asc">Naam A-Z</option>
-                            <option value="name_desc">Naam Z-A</option>
+                        <optgroup label={t('Naam')}>
+                            <option value="name_asc">{t('Naam A-Z')}</option>
+                            <option value="name_desc">{t('Naam Z-A')}</option>
                         </optgroup>
-                        <optgroup label="VIP Score">
-                            <option value="vip_high">Hoogste VIP eerst</option>
-                            <option value="vip_low">Laagste VIP eerst</option>
+                        <optgroup label={t('VIP Score')}>
+                            <option value="vip_high">{t('Hoogste VIP eerst')}</option>
+                            <option value="vip_low">{t('Laagste VIP eerst')}</option>
                         </optgroup>
-                        <optgroup label="Bedrijf">
-                            <option value="company_asc">Bedrijf A-Z</option>
-                            <option value="company_desc">Bedrijf Z-A</option>
+                        <optgroup label={t('Bedrijf')}>
+                            <option value="company_asc">{t('Bedrijf A-Z')}</option>
+                            <option value="company_desc">{t('Bedrijf Z-A')}</option>
                         </optgroup>
-                        <optgroup label="Land">
-                            <option value="country_asc">Land A-Z</option>
-                            <option value="country_desc">Land Z-A</option>
+                        <optgroup label={t('Land')}>
+                            <option value="country_asc">{t('Land A-Z')}</option>
+                            <option value="country_desc">{t('Land Z-A')}</option>
                         </optgroup>
                     </select>
 
@@ -619,10 +619,10 @@ function Guests({ onUpdate }) {
                         className="input"
                         style={{ width: 'auto', minWidth: '100px' }}
                     >
-                        <option value="10">10 per pagina</option>
-                        <option value="50">50 per pagina</option>
-                        <option value="100">100 per pagina</option>
-                        <option value="250">250 per pagina</option>
+                        <option value="10">{t('10 per pagina')}</option>
+                        <option value="50">{t('50 per pagina')}</option>
+                        <option value="100">{t('100 per pagina')}</option>
+                        <option value="250">{t('250 per pagina')}</option>
                     </select>
                 </div>
             </div>

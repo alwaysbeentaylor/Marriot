@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import vipIcon from '../../assets/vip-brain.png';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 function WelcomeModal({ forceOpen = false, onClose }) {
+    const { t } = useLanguage();
     const [isOpen, setIsOpen] = useState(forceOpen);
 
     useEffect(() => {
@@ -76,7 +78,7 @@ function WelcomeModal({ forceOpen = false, onClose }) {
                         Know Your VIP
                     </h2>
                     <p className="mt-2 text-white/90 text-sm tracking-wide">
-                        Premium Guest Intelligence
+                        {t('Premium Guest Intelligence')}
                     </p>
                 </div>
 
@@ -95,8 +97,8 @@ function WelcomeModal({ forceOpen = false, onClose }) {
                                 1
                             </div>
                             <div>
-                                <h4 className="font-semibold text-gray-800">Importeer Gasten</h4>
-                                <p className="text-sm text-gray-500 mt-0.5">Upload je Mews Excel export bij 'Importeren'.</p>
+                                <h4 className="font-semibold text-gray-800">{t('Importeer Gasten')}</h4>
+                                <p className="text-sm text-gray-500 mt-0.5">{t("Upload je Excel export bij 'Importeren'.")}</p>
                             </div>
                         </div>
 
@@ -112,8 +114,8 @@ function WelcomeModal({ forceOpen = false, onClose }) {
                                 2
                             </div>
                             <div>
-                                <h4 className="font-semibold text-gray-800">Automatisch Onderzoek</h4>
-                                <p className="text-sm text-gray-500 mt-0.5">Het systeem start direct. Je hoeft niets te doen.</p>
+                                <h4 className="font-semibold text-gray-800">{t('Automatisch Onderzoek')}</h4>
+                                <p className="text-sm text-gray-500 mt-0.5">{t('Het systeem start direct. Je hoeft niets te doen.')}</p>
                             </div>
                         </div>
 
@@ -129,8 +131,8 @@ function WelcomeModal({ forceOpen = false, onClose }) {
                                 3
                             </div>
                             <div>
-                                <h4 className="font-semibold text-gray-800">Bekijk & Download</h4>
-                                <p className="text-sm text-gray-500 mt-0.5">Bekijk VIP scores en download rapporten als PDF.</p>
+                                <h4 className="font-semibold text-gray-800">{t('Bekijk & Download')}</h4>
+                                <p className="text-sm text-gray-500 mt-0.5">{t('Bekijk VIP scores en download rapporten als PDF.')}</p>
                             </div>
                         </div>
                     </div>
@@ -144,7 +146,7 @@ function WelcomeModal({ forceOpen = false, onClose }) {
                             boxShadow: '0 6px 20px rgba(218, 192, 94, 0.4)'
                         }}
                     >
-                        Aan de slag ✨
+                        {t('Aan de slag')} ✨
                     </button>
                 </div>
             </div>
